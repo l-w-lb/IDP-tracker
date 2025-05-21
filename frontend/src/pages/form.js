@@ -1,0 +1,345 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import '../styles/form.css';
+import { API_URL } from '../config.js';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
+function Form() {
+  const [formTitle, setFormTitle] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formData, setFormData] = useState([]);
+
+  // mockup data
+  let QIndex = 0;
+  let id = 1;
+  let userID = 3;
+
+  useEffect(() => {
+    const getTitleDescription = async () => {
+      try {
+        const res = await axios.post(`${API_URL}/get-form-title-description`, {
+          id: id
+        });
+        setFormTitle(res.data[0].title)
+        setFormDescription(res.data[0].description)
+      } catch (err) {
+        console.error('fail to query title and description:', err.message);
+      }
+    };
+
+    getTitleDescription();
+
+    const getformData = async () => {
+      try {
+        const res = await axios.post(`${API_URL}/get-part-topic-question`, {
+          id: id
+        });
+        const rawData = res.data;
+        const partMap = {};
+
+        rawData.forEach(item => {
+          if (!partMap[item.partID]) {
+            partMap[item.partID] = {
+              id: item.partID,             
+              part: item.part,
+              topics: []
+            };
+          }
+
+          const currentPart = partMap[item.partID];
+
+          let topic = currentPart.topics.find(t => t.id === item.topicID);
+          if (!topic) {
+            topic = {
+              id: item.topicID,           
+              topic: item.topic,
+              description: item.topicDescription, 
+              type: item.topicType,
+              topicDetail: {
+                  ...item.typeDetail,
+                  add: item.typeDetail?.min ?? null
+                },
+              questions: []
+            };
+            currentPart.topics.push(topic);
+          }
+
+
+          let question = topic.questions.find(q => q.id === item.questionID);
+          if (!question) {
+            question = {
+              id: item.questionID,
+              question: item.question,
+              example: item.EXAMPLE,
+              required: item.required,
+              type: item.type,
+              answer: [],
+              listboxValue: []
+            };
+            topic.questions.push(question);
+          }
+
+          if (item.type === "listbox" && item.text) {
+            question.listboxValue.push(item.text);
+          }
+        });
+
+        const result = Object.values(partMap);
+        setFormData(result);
+        console.log(result)
+
+      } catch (err) {
+        console.error('fail to query data:', err.message);
+      }
+    };
+
+    getformData();
+  }, []);
+
+  const insertUserAnswer = async (value) => {
+      try {
+        const res = await axios.post(`${API_URL}/insert-user-answer`, {
+          value: value
+        });
+      } catch (err) {
+        console.error('fail to insert data:', err.message);
+      }
+    };
+
+  const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
+  setFormData(prevFormData => {
+    const updated = [...prevFormData];
+    const questions = [...updated[partIndex].topics[topicIndex].questions];
+    const question = { ...questions[questionIndex] };
+
+    const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
+      ? question.answer.map(a =>
+          a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
+        )
+      : [...question.answer, { groupInstance, answer: newAnswer }];
+
+    question.answer = updatedAnswers;
+    questions[questionIndex] = question;
+    updated[partIndex].topics[topicIndex].questions = questions;
+
+    return updated;
+  });
+};
+
+
+  const handlePlusClick = (partIndex, topicIndex) => {
+    let currentValue = formData[partIndex]?.topics[topicIndex]?.topicDetail?.add || 0;
+    currentValue += 1;
+    setFormData(prevFormData => {
+        const updatedFormData = [...prevFormData];
+          updatedFormData[partIndex].topics[topicIndex].topicDetail.add = currentValue;
+        return updatedFormData;
+    })
+  };
+
+  const handleSubmit = () => {
+    for (const section of formData) {
+      for (const topic of section.topics) {
+        for (const question of topic.questions) {
+            for (const question of topic.questions) {
+              if (question.required) {
+                const hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
+                if (!hasAnyAnswer) {
+                  console.log('ข้อมูล',formData);
+                  alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      const result = [];
+
+      formData.forEach(part => {
+        part.topics.forEach(topic => {
+          topic.questions.forEach(question => {
+            if (Array.isArray(question.answer)) {
+              question.answer.forEach((a, instanceIndex) => {
+                if (a.answer && a.answer.trim() !== '') {
+                  result.push([
+                    question.id,
+                    userID,
+                    a.answer,
+                    instanceIndex,
+                  ]);
+                }
+              });
+            }
+          });
+        });
+      });
+
+      
+      if (result == '') {
+          alert("ยังไม่ได้มีการกรอกคำตอบ");
+          return
+      }
+      console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
+      // insertUserAnswer(result);
+    };
+
+  return (
+      <div >
+        {/* header */}
+        <div>
+            <div className="card p-4 my-3 text-center center-card">
+                <div className="title">{formTitle}</div>
+                <div className="description mt-3">{formDescription}</div>
+            </div>
+        </div>
+
+        {/* formData */}
+        {formData.map((part, formDataIndex) => (
+          <div key={formData.id}>
+                {part.part && (
+                    <div className="card p-4 my-3 text-center part center-card">
+                      <div>{part.part}</div>
+                    </div>
+                )}
+
+            <div>
+                {part.topics.map((topicElement, topicElementIndex) => 
+                    <div key={topicElement.id}>
+                        <div className="card p-4 my-3 center-card">
+                          <div className="mb-1 mt-1 topic">{topicElement.topic}</div>
+                          <div className="mb-1 mt-1 description">{topicElement.description}</div>
+                          <hr />
+                          <div className="mb-3 question">
+                            {topicElement.type === "multipleAnswer" ? (
+                              <div>
+                                  {Array.from({ length: topicElement.topicDetail.add }).map((_, multipleIndex) => (
+                                    <div key={multipleIndex}>
+                                      {topicElement.questions.map((question, questionIndex) => {
+                                        const currentIndex = QIndex++;
+                                        return (
+                                            <div key={question.id}>
+                                                <div 
+                                                  className="mb-1 mt-1">{question.question}
+                                                  {(multipleIndex < topicElement.topicDetail.min && Boolean(question.required) && <span style={{ color: 'red' }}> *</span>)}
+                                                </div>
+
+                                                <div className="mb-1 mt-1 example">{question.example}</div>
+                                              
+                                                {question.type === 'listbox' ? (
+                                                    <div className="mb-4 mt-2">
+                                                      <select
+                                                          value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer || ''}
+                                                          className='listbox'
+                                                          onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, multipleIndex, newValue); 
+                                                          }}
+                                                        >
+                                                          <option value="" disabled>เลือก</option>
+                                                          {question.listboxValue.map((item, itemIndex) => (
+                                                            <option key={itemIndex} value={item}>
+                                                              {item}
+                                                            </option>
+                                                          ))}
+                                                      </select>
+                                                    </div>
+                                                ) : (
+                                                  <div className="mb-4">
+                                                    <input
+                                                      type="text"
+                                                      className="input-field"
+                                                      placeholder="คำตอบของคุณ"
+                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer}
+                                                      onChange={(e) => {
+                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, multipleIndex, e.target.value)
+                                                      }}
+                                                    />
+                                                  </div>
+                                                )}
+                                            </div>
+                                        )
+                                      })}
+                                      <hr className='my-5'></hr>                
+                                    </div>
+                                  ))}
+
+                                  <div className="d-flex justify-content-center">
+                                    <button 
+                                      className="btn-plus"
+                                      onClick={() => handlePlusClick(formDataIndex, topicElementIndex)}
+                                    >
+                                      <i className="bi bi-plus-circle-fill fs-2 mt-3"></i>
+                                    </button>
+                                  </div>
+                              </div>
+                            ):(
+                                <div>
+                                  {topicElement.questions.map((question, questionIndex) => {
+                                    const currentIndex = QIndex++;
+                                    return (
+                                        <div key={question.id}>
+                                            <div 
+                                              className="mb-1 mt-1">{question.question}
+                                              {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+                                            </div>
+                                            <div className="mb-1 mt-1 example">{question.example}</div>
+
+                                            {question.type === 'listbox' ? (
+                                                <div className="mb-4 mt-2">
+                                                  <select
+                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
+                                                      className='listbox'
+                                                      onChange={(e) => {
+                                                        const newValue = e.target.value;
+                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, newValue); 
+                                                      }}
+                                                    >
+                                                      <option value="" disabled>เลือก</option>
+                                                      {question.listboxValue.map((item, itemIndex) => (
+                                                        <option key={itemIndex} value={item}>
+                                                          {item}
+                                                        </option>
+                                                      ))}
+                                                  </select>
+                                                </div>
+                                            ) : (
+                                              <div className="mb-4">
+                                                <input
+                                                  type="text"
+                                                  className="input-field"
+                                                  placeholder="คำตอบของคุณ"
+                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer}
+                                                      onChange={(e) => {
+                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
+                                                      }}                                                />
+                                              </div>
+                                            )}
+                                        </div>
+                                    )
+                                  })}
+                                </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                )}
+            </div>
+          </div>
+        ))}
+        
+        <div className="d-flex justify-content-center">
+          <button className="btn btn-success mb-3" onClick={handleSubmit}>
+            Submit
+          </button>
+        </div>
+
+      </div>
+      
+  );
+}
+
+export default Form;
