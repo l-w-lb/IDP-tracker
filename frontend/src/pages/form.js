@@ -6,6 +6,8 @@ import { API_URL } from '../config.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+import { fetchTitleDescription, fetchformData, insertUserAnswer } from '../services/formServices.js';
+
 function Form() {
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -17,85 +19,22 @@ function Form() {
   let userID = 3;
 
   useEffect(() => {
-    const getTitleDescription = async () => {
+    const loadData = async () => {
       try {
-        const res = await axios.post(`${API_URL}/get-form-title-description`, {
-          id: id
-        });
-        setFormTitle(res.data[0].title)
-        setFormDescription(res.data[0].description)
+        const { title, description } = await fetchTitleDescription(id);
+        setFormTitle(title);
+        setFormDescription(description);
+
+        const structure = await fetchformData(id);
+        setFormData(structure);
+        console.log(structure);
+        
       } catch (err) {
-        console.error('fail to query title and description:', err.message);
+        console.error('Error loading form data:', err.message);
       }
     };
 
-    getTitleDescription();
-
-    const getformData = async () => {
-      try {
-        const res = await axios.post(`${API_URL}/get-part-topic-question`, {
-          id: id
-        });
-        const rawData = res.data;
-        const partMap = {};
-
-        rawData.forEach(item => {
-          if (!partMap[item.partID]) {
-            partMap[item.partID] = {
-              id: item.partID,             
-              part: item.part,
-              topics: []
-            };
-          }
-
-          const currentPart = partMap[item.partID];
-
-          let topic = currentPart.topics.find(t => t.id === item.topicID);
-          if (!topic) {
-            topic = {
-              id: item.topicID,           
-              topic: item.topic,
-              description: item.topicDescription, 
-              type: item.topicType,
-              topicDetail: {
-                  ...item.typeDetail,
-                  add: item.typeDetail?.min ?? null
-                },
-              questions: []
-            };
-            currentPart.topics.push(topic);
-          }
-
-
-          let question = topic.questions.find(q => q.id === item.questionID);
-          if (!question) {
-            question = {
-              id: item.questionID,
-              question: item.question,
-              example: item.EXAMPLE,
-              required: item.required,
-              type: item.type,
-              answer: [],
-              listboxValue: []
-            };
-            topic.questions.push(question);
-          }
-
-          if (item.type === "listbox" && item.text) {
-            question.listboxValue.push(item.text);
-          }
-        });
-
-        const result = Object.values(partMap);
-        setFormData(result);
-        console.log(result)
-
-      } catch (err) {
-        console.error('fail to query data:', err.message);
-      }
-    };
-
-    getformData();
+    loadData();
   }, []);
 
   const insertUserAnswer = async (value) => {

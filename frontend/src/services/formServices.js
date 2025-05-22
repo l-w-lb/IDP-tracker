@@ -1,0 +1,81 @@
+import axios from 'axios';
+import { API_URL } from '../config';
+
+// const API_URL = 'http://localhost:3300/api/form';
+
+export const fetchTitleDescription = async (id) => {
+        const res = await axios.post(`${API_URL}/get-form-title-description`, {
+            id: id
+        });
+        return {
+            title: res.data[0].title,
+            description: res.data[0].description
+        }
+    };
+
+export const fetchformData = async (id) => {
+        const res = await axios.post(`${API_URL}/get-part-topic-question`, {
+          id: id
+        });
+        const rawData = res.data;
+        const partMap = {};
+
+        rawData.forEach(item => {
+          if (!partMap[item.partID]) {
+            partMap[item.partID] = {
+              id: item.partID,             
+              part: item.part,
+              topics: []
+            };
+          }
+
+          const currentPart = partMap[item.partID];
+
+          let topic = currentPart.topics.find(t => t.id === item.topicID);
+          if (!topic) {
+            topic = {
+              id: item.topicID,           
+              topic: item.topic,
+              description: item.topicDescription, 
+              type: item.topicType,
+              topicDetail: {
+                  ...item.typeDetail,
+                  add: item.typeDetail?.min ?? null
+                },
+              questions: []
+            };
+            currentPart.topics.push(topic);
+          }
+
+
+          let question = topic.questions.find(q => q.id === item.questionID);
+          if (!question) {
+            question = {
+              id: item.questionID,
+              question: item.question,
+              example: item.EXAMPLE,
+              required: item.required,
+              type: item.type,
+              answer: [],
+              listboxValue: []
+            };
+            topic.questions.push(question);
+          }
+
+          if (item.type === "listbox" && item.text) {
+            question.listboxValue.push(item.text);
+          }
+        });
+
+        return Object.values(partMap);
+    };
+
+export const insertUserAnswer = async (value) => {
+      try {
+        const res = await axios.post(`${API_URL}/insert-user-answer`, {
+          value: value
+        });
+      } catch (err) {
+        console.error('fail to insert data:', err.message);
+      }
+    };
