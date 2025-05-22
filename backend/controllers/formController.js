@@ -42,7 +42,7 @@ const getPartTopicQuestion = (req, res) => {
 const insertUserAnswer = (req, res) => {
   const value = req.body.value;
   console.log(value)
-  const sql = `INSERT INTO useranswer (questionID, userID, text, groupInstance)
+  const sql = `INSERT INTO useranswer (questionID, accountID, text, groupInstance)
       VALUES ?;
   `;
 

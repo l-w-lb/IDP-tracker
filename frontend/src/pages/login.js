@@ -1,16 +1,21 @@
 import '../styles/global.css'
 import '../styles/login.css'
 
-function Login () {
+import { fetchUserData } from '../services/loginServices';
 
-    const handleLogin = (partIndex, topicIndex) => {
-        // let currentValue = formData[partIndex]?.topics[topicIndex]?.topicDetail?.add || 0;
-        // currentValue += 1;
-        // setFormData(prevFormData => {
-        //     const updatedFormData = [...prevFormData];
-        //     updatedFormData[partIndex].topics[topicIndex].topicDetail.add = currentValue;
-        //     return updatedFormData;
-        // })
+function Login () {
+    const handleLogin = () => {
+        const getUserData = async () => {
+            try {
+            const userData = await fetchUserData('user@gmail.com','user1');
+            console.log('get data',userData);
+            
+            } catch (err) {
+                console.error('Error loading form data:', err.message);
+            }
+        };
+    
+        getUserData();
     };
 
     return (
@@ -41,7 +46,7 @@ function Login () {
                         </div>
                         
                         <div className="d-flex justify-content-center">
-                            <button className="btn btn-success mt-5 w-100" onClick={handleLogin}>
+                            <button className="btn btn-success mt-5 w-100" onClick={handleLogin()}>
                                 Login
                             </button>
                         </div>

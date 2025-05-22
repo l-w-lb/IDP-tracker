@@ -14,8 +14,8 @@ function Form() {
   const [formData, setFormData] = useState([]);
 
   // mockup data
-  let id = 1; //formID
-  let userID = 3;
+  let id = 3; //formID
+  let accountID = 3;
 
   useEffect(() => {
     const loadData = async () => {
@@ -117,7 +117,7 @@ function Form() {
                 if (a.answer && a.answer.trim() !== '') {
                   result.push([
                     question.id,
-                    userID,
+                    accountID,
                     a.answer,
                     instanceIndex,
                   ]);

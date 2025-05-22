@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { API_URL } from '../config';
+import { formRoutes } from '../config';
 
 export const fetchTitleDescription = async (id) => {
-        const res = await axios.post(`${API_URL}/get-form-title-description`, {
+        const res = await axios.post(`${formRoutes}/get-form-title-description`, {
             id: id
         });
         return {
@@ -12,7 +12,7 @@ export const fetchTitleDescription = async (id) => {
     };
 
 export const fetchformData = async (id) => {
-        const res = await axios.post(`${API_URL}/get-part-topic-question`, {
+        const res = await axios.post(`${formRoutes}/get-part-topic-question`, {
           id: id
         });
         const rawData = res.data;
@@ -70,7 +70,7 @@ export const fetchformData = async (id) => {
 
 export const insertUserAnswer = async (value) => {
       try {
-        const res = await axios.post(`${API_URL}/insert-user-answer`, {
+        const res = await axios.post(`${formRoutes}/insert-user-answer`, {
           value: value
         });
       } catch (err) {
