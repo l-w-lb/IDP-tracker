@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { API_URL } from '../config';
 
-// const API_URL = 'http://localhost:3300/api/form';
-
 export const fetchTitleDescription = async (id) => {
         const res = await axios.post(`${API_URL}/get-form-title-description`, {
             id: id

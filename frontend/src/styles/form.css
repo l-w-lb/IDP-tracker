@@ -4,10 +4,10 @@ body {
   font-family: sans-serif;
 }
 
-.center-card {
+/* .center-card {
   max-width: 800px;
   margin: 0 auto;
-}
+} */
 
 .title {
     font-size: 40px;
@@ -33,7 +33,7 @@ body {
     font-size: 20px;
 }
 
-select {
+/* select {
     width: 40%;
     max-width: 40%;
     appearance: none;      
@@ -48,7 +48,7 @@ select {
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 12px;
-}
+} */
 
 .input-field {
     border: none;
@@ -65,14 +65,14 @@ select {
   border-bottom: 2px solid #28a745; 
 }
 
-.btn {
+/* .btn {
   font-size: 30px;
 }
 
 .btn-success {
   background-color: #28a745;
   color: #fff;
-}
+} */
 
 .btn-plus {
   color: black; 

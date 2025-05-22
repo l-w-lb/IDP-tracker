@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import '../styles/form.css';
-import { API_URL } from '../config.js';
+import '../styles/global.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -14,8 +14,7 @@ function Form() {
   const [formData, setFormData] = useState([]);
 
   // mockup data
-  let id = 1;
-  let id = 3; //formID
+  let id = 1; //formID
   let userID = 3;
 
   useEffect(() => {
@@ -79,14 +78,7 @@ function Form() {
   const handleSubmit = () => {
     for (const section of formData) {
       for (const topic of section.topics) {
-          // let isAllRequiredAnswered = true;
           for (const question of topic.questions) {
-              // if (topic.type === 'multipleAnswer') {
-              //   console.log('topic',topic.type === 'multipleAnswer')
-              //   const min = topic.topicDetail?.min;
-              //   isAllRequiredAnswered = question.answer.length >= min
-              // }
-
             if (question.required) {
               let hasAnyAnswer = true;
               if (topic.type === 'multipleAnswer') {
@@ -104,7 +96,7 @@ function Form() {
               } else {
                   hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
                 }
-                
+
               if (!hasAnyAnswer) {
                   console.log('ข้อมูล',formData);
                   alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
@@ -271,7 +263,8 @@ function Form() {
                                                   value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer}
                                                       onChange={(e) => {
                                                         handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
-                                                      }}                                                />
+                                                      }}                                                
+                                                />
                                               </div>
                                             )}
                                         </div>

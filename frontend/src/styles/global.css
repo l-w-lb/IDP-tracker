@@ -1,0 +1,30 @@
+.center-card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+select {
+    width: 40%;
+    max-width: 40%;
+    appearance: none;      
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px !important;
+    color: #333;
+
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='10' height='7' viewBox='0 0 10 7' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23333' stroke-width='2' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+}
+
+.btn {
+  font-size: 30px;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: #fff;
+}
