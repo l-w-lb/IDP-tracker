@@ -14,8 +14,8 @@ function Form() {
   const [formData, setFormData] = useState([]);
 
   // mockup data
-  let QIndex = 0;
   let id = 1;
+  let id = 3; //formID
   let userID = 3;
 
   useEffect(() => {
@@ -27,7 +27,7 @@ function Form() {
 
         const structure = await fetchformData(id);
         setFormData(structure);
-        console.log(structure);
+        console.log('get data',structure);
         
       } catch (err) {
         console.error('Error loading form data:', err.message);
@@ -37,11 +37,9 @@ function Form() {
     loadData();
   }, []);
 
-  const insertUserAnswer = async (value) => {
+  const insertAnswer = async (value) => {
       try {
-        const res = await axios.post(`${API_URL}/insert-user-answer`, {
-          value: value
-        });
+        const insertAnswers = await insertUserAnswer(value);
       } catch (err) {
         console.error('fail to insert data:', err.message);
       }
@@ -81,16 +79,37 @@ function Form() {
   const handleSubmit = () => {
     for (const section of formData) {
       for (const topic of section.topics) {
-        for (const question of topic.questions) {
-            for (const question of topic.questions) {
-              if (question.required) {
-                const hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
-                if (!hasAnyAnswer) {
+          // let isAllRequiredAnswered = true;
+          for (const question of topic.questions) {
+              // if (topic.type === 'multipleAnswer') {
+              //   console.log('topic',topic.type === 'multipleAnswer')
+              //   const min = topic.topicDetail?.min;
+              //   isAllRequiredAnswered = question.answer.length >= min
+              // }
+
+            if (question.required) {
+              let hasAnyAnswer = true;
+              if (topic.type === 'multipleAnswer') {
+                  const min = topic.topicDetail?.min;
+                  console.log(min)
+                  for (let i = 0; i < min; i++) {
+                    const found = question.answer.find(
+                      a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                    );
+
+                    if (!found) {
+                      hasAnyAnswer = false;
+                    }
+                  }
+              } else {
+                  hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
+                }
+                
+              if (!hasAnyAnswer) {
                   console.log('ข้อมูล',formData);
                   alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
                   return;
                 }
-              }
             }
           }
         }
@@ -158,7 +177,6 @@ function Form() {
                                   {Array.from({ length: topicElement.topicDetail.add }).map((_, multipleIndex) => (
                                     <div key={multipleIndex}>
                                       {topicElement.questions.map((question, questionIndex) => {
-                                        const currentIndex = QIndex++;
                                         return (
                                             <div key={question.id}>
                                                 <div 
@@ -218,7 +236,6 @@ function Form() {
                             ):(
                                 <div>
                                   {topicElement.questions.map((question, questionIndex) => {
-                                    const currentIndex = QIndex++;
                                     return (
                                         <div key={question.id}>
                                             <div 
