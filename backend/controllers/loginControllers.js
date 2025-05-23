@@ -3,7 +3,7 @@ const db = require('../db');
 const fetchUserData = (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const sql = `SELECT account.username, account.password, role.name AS role
+    const sql = `SELECT account.id, account.username, account.password, role.name AS role
             FROM account
             JOIN role ON account.roleID = role.id
             WHERE account.username = ?

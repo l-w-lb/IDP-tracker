@@ -135,6 +135,7 @@ function Form() {
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
       // insertUserAnswer(result);
+      alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
     };
 
   return (

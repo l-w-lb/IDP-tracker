@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 require('dotenv').config();
 
 const formRoutes = require('./routes/formRoutes'); 
@@ -14,6 +15,13 @@ app.use(express.json());
 // Routes
 app.use('/api/form', formRoutes); 
 app.use('/api/login', loginRoutes); 
+
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
