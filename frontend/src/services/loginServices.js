@@ -7,7 +7,6 @@ export const fetchUserData = async (username,password) => {
             password: password
         });
         return {
-            username: res.data[0].username,
-            role: res.data[0].role
+            message: res.data.message,
         }
     };

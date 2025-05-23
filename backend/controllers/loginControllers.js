@@ -14,7 +14,14 @@ const fetchUserData = (req, res) => {
             return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
         }
         if (err) throw err;
-        res.status(200).json({result: result});
+
+        const user = result[0];
+        req.session.user = {
+            id: user.id,
+            username: user.username,
+            role: user.role
+        };
+        res.status(200).json({message: 'เข้าสู่ระบบแล้ว', user: req.session.user});
     });
 };
 
