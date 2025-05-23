@@ -1,5 +1,20 @@
 const db = require('../db');
 
+const checkLogin = (req, res) => {
+  console.log('🔍 SESSION IN /check-login:', req.session);
+
+  if (req.session && req.session.user) {
+    res.json({
+      loggedIn: true,
+      username: req.session.user.username,
+      role: req.session.user.role,
+      id: req.session.user.id
+    });
+  } else {
+    res.json({ loggedIn: false });
+  }
+};
+
 const fetchUserData = (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -11,7 +26,7 @@ const fetchUserData = (req, res) => {
     `;
     db.query(sql, [username, password], (err, result) => {
         if (result.length === 0) {
-            return res.status(401).json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+            return res.json({ message: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
         }
         if (err) throw err;
 
@@ -21,10 +36,23 @@ const fetchUserData = (req, res) => {
             username: user.username,
             role: user.role
         };
+        console.log('SESSION AFTER LOGIN:', req.session.user);
         res.status(200).json({message: 'เข้าสู่ระบบแล้ว', user: req.session.user});
     });
 };
 
+const logout = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Logout failed' });
+    }
+    res.clearCookie('connect.sid');
+    return res.json({ message: 'Logged out' });
+  });
+};
+
 module.exports = {
-  fetchUserData
+  checkLogin,
+  fetchUserData,
+  logout
 };

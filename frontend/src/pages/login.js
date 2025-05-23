@@ -4,7 +4,7 @@ import '../styles/login.css'
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { fetchUserData } from '../services/loginServices';
+import { fetchUserData } from '../services/authServices';
 
 function Login () {
     const [loginStatus, setLoginStatus] = useState(false);
@@ -20,13 +20,15 @@ function Login () {
         const getUserData = async () => {
             try {
                 const getLoginStatus = await fetchUserData(username, password);
+                console.log(getLoginStatus)
                 if (getLoginStatus.message === 'เข้าสู่ระบบแล้ว'){
                     setLoginStatus(true)
                     navigate('/form')
+                } else {
+                    alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
                 }
 
             } catch (err) {
-                alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
                 console.error('Error loading form data:', err.message);
             }
         };
