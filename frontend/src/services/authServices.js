@@ -20,6 +20,7 @@ export const fetchUserData = async (username,password) => {
         });
         return {
             message: res.data.message,
+            user: res.data.user
         }
     };
 

@@ -3,4 +3,4 @@ const API_URL = `http://localhost:${DB_PORT}/api`;
 
 export const authRoute = API_URL + '/auth';
 export const formRoutes = API_URL + '/form';
-export const loginRoute = API_URL + '/login';
+export const formListRoute = API_URL + '/formList';

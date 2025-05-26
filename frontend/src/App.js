@@ -6,6 +6,8 @@ import './App.css';
 import Navbar from './components/navbar.js'
 import Form from './pages/form.js'
 import Login from './pages/login.js';
+import FormList from './pages/formList.js';
+import ApprovalList from './pages/approvalList.js';
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -19,7 +21,11 @@ function LayoutWrapper() {
       {!shouldHideNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/form" element={<Form />} />
+
+        <Route path="/form/:id/:formTitle" element={<Form />} />
+        <Route path="/formList" element={<FormList />} />
+
+        <Route path="/approvalList" element={<ApprovalList />} />
       </Routes>
     </>
   );

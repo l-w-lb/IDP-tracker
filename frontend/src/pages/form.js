@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 import '../styles/form.css';
 import '../styles/global.css';
@@ -9,16 +10,18 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer } from '../services/formServices.js';
 
 function Form() {
+  const { id } = useParams();
+
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formData, setFormData] = useState([]);
-  const [oldAnswer, setOldAnswer] = useState([]);
 
   // mockup data
-  let id = 3; //formID
+  // let id = 1; //formID
   let accountID = 3;
 
   useEffect(() => {
+    console.log(id)
     const loadData = async () => {
       try {
         const { title, description } = await fetchTitleDescription(id);
@@ -29,9 +32,7 @@ function Form() {
         setFormData(structure);
 
         const userAnswer = await fetchUserAnswer(id,accountID);
-        setOldAnswer(userAnswer);
         console.log('get data',structure,userAnswer);
-        handleOldAnswer(userAnswer)
         
       } catch (err) {
         console.error('Error loading form data:', err.message);
@@ -41,10 +42,6 @@ function Form() {
     loadData();
   }, []);
 
-  useEffect (() => {
-    console.log(formData)
-  }, [formData])
-
   const insertAnswer = async (value) => {
       try {
         const insertAnswers = await insertUserAnswer(value);
@@ -52,11 +49,6 @@ function Form() {
         console.error('fail to insert data:', err.message);
       }
     };
-
-  const handleOldAnswer = (oldAnswer) => {
-
-    // handleAnswerChange(oldAnswer);
-  }
 
   const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
   setFormData(prevFormData => {

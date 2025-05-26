@@ -22,7 +22,12 @@ function Login () {
                 const getLoginStatus = await fetchUserData(username, password);
                 if (getLoginStatus.message === 'เข้าสู่ระบบแล้ว'){
                     setLoginStatus(true)
-                    navigate('/form')
+                    if(getLoginStatus.user.role === 'user') {
+                        navigate('/formList')
+                    } else if (getLoginStatus.user.role === 'approver') {
+                        navigate('/approvalList')
+                    }
+
                 } else {
                     alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
                 }

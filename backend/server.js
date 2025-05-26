@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
 const formRoutes = require('./routes/formRoutes'); 
+const formListRoutes = require('./routes/formListRoutes'); 
 
 const app = express();
 
@@ -29,9 +30,10 @@ app.use(
   })
 );
 
-// ✅ 4. Route
+//Route
 app.use('/api/auth', authRoutes); 
 app.use('/api/form', formRoutes); 
+app.use('/api/formList', formListRoutes); 
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

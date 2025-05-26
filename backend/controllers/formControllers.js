@@ -26,7 +26,7 @@ const getPartTopicQuestion = (req, res) => {
     JOIN answertype ON answertype.id = question.answerTypeID
     JOIN topictype ON topictype.id = topic.topicTypeID
     LEFT JOIN listbox ON question.id = listbox.questionID
-    JOIN useranswer ON question.id = useranswer.questionID
+    LEFT JOIN useranswer ON question.id = useranswer.questionID
     WHERE form.id = ?
     ORDER BY 
       topic.partID ASC,
