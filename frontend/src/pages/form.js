@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import '../styles/form.css';
 import '../styles/global.css';
@@ -7,10 +7,12 @@ import '../styles/global.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer } from '../services/formServices.js';
+import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
 function Form() {
   const { id } = useParams();
+
+  const navigate = useNavigate();
 
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -21,7 +23,6 @@ function Form() {
   let accountID = 3;
 
   useEffect(() => {
-    console.log(id)
     const loadData = async () => {
       try {
         const { title, description } = await fetchTitleDescription(id);
@@ -32,7 +33,7 @@ function Form() {
         setFormData(structure);
 
         const userAnswer = await fetchUserAnswer(id,accountID);
-        console.log('get data',structure,userAnswer);
+        console.log('get data',structure);
         
       } catch (err) {
         console.error('Error loading form data:', err.message);
@@ -49,6 +50,15 @@ function Form() {
         console.error('fail to insert data:', err.message);
       }
     };
+
+  const generatePDF = async (formTitle, additional, username) => {
+    console.log('pdf generated');
+      try {
+        const genPDF = await generatePDF(formTitle, additional, username);
+      } catch (err) {
+        console.error('fail to generates PDF:', err.message);
+      }
+  }
 
   const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
   setFormData(prevFormData => {
@@ -80,6 +90,10 @@ function Form() {
         return updatedFormData;
     })
   };
+
+  const handleBack = () => {
+    navigate('/formList')
+  }
 
   const handleSubmit = () => {
     for (const section of formData) {
@@ -140,8 +154,10 @@ function Form() {
           return
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      insertAnswer(result);
-      alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
+      // insertAnswer(result);
+      generatePDF(formTitle,1,2);
+      // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
+      navigate('/formList');
     };
 
   return (
@@ -293,7 +309,10 @@ function Form() {
         ))}
         
         <div className="d-flex justify-content-center">
-          <button className="btn btn-success mb-3" onClick={handleSubmit}>
+          <button className="btn btn-success mb-3 mx-2" onClick={handleBack}>
+            Back
+          </button>
+          <button className="btn btn-success mb-3 mx-2" onClick={handleSubmit}>
             Submit
           </button>
         </div>

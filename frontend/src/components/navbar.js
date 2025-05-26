@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useUser } from '../context/userContext.js';
 
 import '../styles/navbar.css'
 
@@ -7,7 +8,8 @@ import { checkLogin, logout } from '../services/authServices';
 
 function Navbar() {
   const [username, setUsername] = useState('');
-
+  const { user } = useUser();
+  console.log('user',user)
   const navigate = useNavigate();
 
   const handleLogout = async () => {

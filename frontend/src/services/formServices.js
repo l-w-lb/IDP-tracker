@@ -96,3 +96,15 @@ export const fetchUserAnswer = async (formID, accountID) => {
         console.error('fail to insert data:', err.message);
       }
     };
+
+export const generatePDF = async (formTitle, additional, username) => {
+      try {
+        const res = await axios.post(`${formRoutes}/generate-pdf`, {
+            title: formTitle,
+            additional: additional,
+            username: username
+        })
+      } catch (err) {
+        console.error('fail to generate PDF:', err.message);
+      }
+}

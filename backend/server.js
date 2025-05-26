@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const path = require('path');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -34,6 +35,7 @@ app.use(
 app.use('/api/auth', authRoutes); 
 app.use('/api/form', formRoutes); 
 app.use('/api/formList', formListRoutes); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -47,7 +47,9 @@ function FormList() {
                             </Link>
                         </td>
                         <td>waiting</td>
-                        <td>user@gmail.com_{list.title}.pdf</td>
+                        <td>
+                          <a href={"/uploads/สำหรับการทดสอบ.pdf"} target="_blank">ดูไฟล์ PDF</a>
+                        </td>
                         </tr>
                     </tbody>
                 ))}
