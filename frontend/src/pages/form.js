@@ -6,12 +6,13 @@ import '../styles/global.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer } from '../services/formServices.js';
+import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer } from '../services/formServices.js';
 
 function Form() {
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formData, setFormData] = useState([]);
+  const [oldAnswer, setOldAnswer] = useState([]);
 
   // mockup data
   let id = 3; //formID
@@ -26,7 +27,11 @@ function Form() {
 
         const structure = await fetchformData(id);
         setFormData(structure);
-        console.log('get data',structure);
+
+        const userAnswer = await fetchUserAnswer(id,accountID);
+        setOldAnswer(userAnswer);
+        console.log('get data',structure,userAnswer);
+        handleOldAnswer(userAnswer)
         
       } catch (err) {
         console.error('Error loading form data:', err.message);
@@ -36,6 +41,10 @@ function Form() {
     loadData();
   }, []);
 
+  useEffect (() => {
+    console.log(formData)
+  }, [formData])
+
   const insertAnswer = async (value) => {
       try {
         const insertAnswers = await insertUserAnswer(value);
@@ -43,6 +52,11 @@ function Form() {
         console.error('fail to insert data:', err.message);
       }
     };
+
+  const handleOldAnswer = (oldAnswer) => {
+
+    // handleAnswerChange(oldAnswer);
+  }
 
   const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
   setFormData(prevFormData => {
@@ -59,7 +73,7 @@ function Form() {
     question.answer = updatedAnswers;
     questions[questionIndex] = question;
     updated[partIndex].topics[topicIndex].questions = questions;
-
+    console.log(updated)
     return updated;
   });
 };
@@ -118,8 +132,8 @@ function Form() {
                   result.push([
                     question.id,
                     accountID,
+                    a.groupInstance,
                     a.answer,
-                    instanceIndex,
                   ]);
                 }
               });
@@ -134,7 +148,7 @@ function Form() {
           return
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      // insertUserAnswer(result);
+      insertAnswer(result);
       alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
     };
 
@@ -167,7 +181,12 @@ function Form() {
                           <div className="mb-3 question">
                             {topicElement.type === "multipleAnswer" ? (
                               <div>
-                                  {Array.from({ length: topicElement.topicDetail.add }).map((_, multipleIndex) => (
+                                  {Array.from({
+                                    length: Math.max(
+                                      topicElement.topicDetail.add ?? 1,
+                                      ...topicElement.questions.map(q => q.answer?.length ?? 0)
+                                    )
+                                  }).map((_, multipleIndex) => (
                                     <div key={multipleIndex}>
                                       {topicElement.questions.map((question, questionIndex) => {
                                         return (

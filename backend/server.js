@@ -8,7 +8,6 @@ const formRoutes = require('./routes/formRoutes');
 
 const app = express();
 
-// ✅ 1. CORS (เปิด cookie ข้าม origin)
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true

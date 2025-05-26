@@ -54,10 +54,17 @@ export const fetchformData = async (id) => {
               example: item.EXAMPLE,
               required: item.required,
               type: item.type,
-              answer: [],
+              answer: [{answer: item.userAnswer, groupInstance: item.groupInstance}],
               listboxValue: []
             };
             topic.questions.push(question);
+          }else {
+            if (item.userAnswer !== undefined) {
+              question.answer.push({
+                answer: item.userAnswer,
+                groupInstance: item.groupInstance ?? 0
+              });
+            }
           }
 
           if (item.type === "listbox" && item.text) {
@@ -73,6 +80,18 @@ export const insertUserAnswer = async (value) => {
         const res = await axios.post(`${formRoutes}/insert-user-answer`, {
           value: value
         });
+      } catch (err) {
+        console.error('fail to insert data:', err.message);
+      }
+    };
+
+export const fetchUserAnswer = async (formID, accountID) => {
+      try {
+        const res = await axios.post(`${formRoutes}/get-user-answer`, {
+          formID: formID,
+          accountID: accountID
+        });
+        return res.data;
       } catch (err) {
         console.error('fail to insert data:', err.message);
       }

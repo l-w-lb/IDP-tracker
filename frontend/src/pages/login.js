@@ -20,7 +20,6 @@ function Login () {
         const getUserData = async () => {
             try {
                 const getLoginStatus = await fetchUserData(username, password);
-                console.log(getLoginStatus)
                 if (getLoginStatus.message === 'เข้าสู่ระบบแล้ว'){
                     setLoginStatus(true)
                     navigate('/form')
@@ -35,10 +34,6 @@ function Login () {
     
         getUserData();
     };
-
-    useEffect (() => {
-        console.log(loginStatus)
-    }, [loginStatus]);
 
 
     return (

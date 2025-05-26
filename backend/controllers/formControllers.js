@@ -17,7 +17,8 @@ const getPartTopicQuestion = (req, res) => {
   const formId = req.body.id;
   const sql = `SELECT topic.partID, part.text AS part, topic.text AS topic, EXAMPLE, required, question.text AS question,
     question.topicID, question.id AS questionID, topic.description AS topicDescription,
-    answertype.type, listbox.text, topictype.type AS topicType, topic.typeDetail
+    answertype.type, listbox.text, topictype.type AS topicType, topic.typeDetail, useranswer.text AS userAnswer,
+    useranswer.groupInstance
     FROM question
     JOIN topic ON topic.id = question.topicID
     JOIN part ON part.id = topic.partID
@@ -25,6 +26,7 @@ const getPartTopicQuestion = (req, res) => {
     JOIN answertype ON answertype.id = question.answerTypeID
     JOIN topictype ON topictype.id = topic.topicTypeID
     LEFT JOIN listbox ON question.id = listbox.questionID
+    JOIN useranswer ON question.id = useranswer.questionID
     WHERE form.id = ?
     ORDER BY 
       topic.partID ASC,
@@ -42,8 +44,10 @@ const getPartTopicQuestion = (req, res) => {
 const insertUserAnswer = (req, res) => {
   const value = req.body.value;
   console.log(value)
-  const sql = `INSERT INTO useranswer (questionID, accountID, text, groupInstance)
-      VALUES ?;
+  const sql = `INSERT INTO useranswer (questionID, accountID, groupInstance, text)
+      VALUES ?
+      ON DUPLICATE KEY UPDATE
+        text = VALUES(text);
   `;
 
   db.query(sql, [value], (err, result) => {
@@ -52,8 +56,31 @@ const insertUserAnswer = (req, res) => {
   });
 };
 
+const getUserAnswer = (req, res) => {
+  const formID = req.body.formID;
+  const accountID = req.body.accountID;
+  const sql = `SELECT useranswer.text, useranswer.questionID, useranswer.groupInstance 
+      FROM useranswer
+      JOIN question ON question.id = useranswer.questionID
+      JOIN topic ON topic.id = question.topicID
+      JOIN part ON part.id = topic.partID
+      JOIN form ON form.id = part.formID
+      WHERE useranswer.accountID = 3
+      AND form.id = 3
+      ORDER BY 
+      	question.id ASC,
+      	useranswer.groupInstance ASC
+  `;
+  
+  db.query(sql, [accountID, formID], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+};
+
 module.exports = {
   getFormTitleDescription,
   getPartTopicQuestion,
-  insertUserAnswer
+  insertUserAnswer,
+  getUserAnswer
 };
