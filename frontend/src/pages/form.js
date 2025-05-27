@@ -27,25 +27,26 @@ function Form() {
   // let accountID = 3;
 
   useEffect(() => {
+    if (!user || !user.id) return;  // ✅ รอ user โหลดก่อน
+
+    const accountID = user.id;
+
     const loadData = async () => {
       try {
         const { title, description } = await fetchTitleDescription(id);
         setFormTitle(title);
         setFormDescription(description);
 
-        const structure = await fetchformData(id);
+        const structure = await fetchformData(id, accountID);
         setFormData(structure);
-
-        // const userAnswer = await fetchUserAnswer(id,accountID);
-        console.log('get data',structure);
-        
-      } catch (err) {
-        console.error('Error loading form data:', err.message);
+      } catch (error) {
+        console.error('Load error:', error);
       }
     };
 
     loadData();
-  }, []);
+  }, [id, user]); 
+
 
   const insertAnswer = async (value) => {
       try {

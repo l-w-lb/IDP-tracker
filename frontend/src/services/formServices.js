@@ -11,9 +11,10 @@ export const fetchTitleDescription = async (id) => {
         }
     };
 
-export const fetchformData = async (id) => {
+export const fetchformData = async (id, userID) => {
         const res = await axios.post(`${formRoutes}/get-part-topic-question`, {
-          id: id
+          formID: id,
+          userID: userID
         });
         console.log('ff',res)
         const rawData = res.data;
