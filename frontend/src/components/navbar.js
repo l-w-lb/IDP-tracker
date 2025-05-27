@@ -7,7 +7,6 @@ import '../styles/navbar.css'
 import { logout } from '../services/authServices';
 
 function Navbar() {
-  const [username, setUsername] = useState('');
   const { user } = useUser();
   const navigate = useNavigate();
 
@@ -20,18 +19,17 @@ function Navbar() {
     }
   };
 
-  useEffect(() => {
-      setUsername(user.username)
-  }, []);
-
   return (
     <div>
       <nav className="navbar">
-        <div className="navbar-left">{username}</div>
-        <div className="navbar-right" onClick={handleLogout} style={{ cursor: 'pointer' }}>Log out</div>
+        <div className="navbar-left">
+          {user?.username ?? 'ไม่พบชื่อผู้ใช้'}
+        </div>
+        <div className="navbar-right" onClick={handleLogout} style={{ cursor: 'pointer' }}>
+          Log out
+        </div>
       </nav>
     </div>
-    
   );
 }
 

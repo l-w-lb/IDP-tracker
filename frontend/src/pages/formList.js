@@ -12,7 +12,7 @@ function FormList() {
         const loadData = async () => {
           try {
             const formList = await fetchFormList();
-            // console.log(formList)
+            console.log(formList)
             setFormList(formList);
             
           } catch (err) {
@@ -46,9 +46,16 @@ function FormList() {
                                 {list.title}
                             </Link>
                         </td>
-                        <td>waiting</td>
+                        <td>{list.status}</td>
                         <td>
-                          <a href={"/uploads/สำหรับการทดสอบ.pdf"} target="_blank">ดูไฟล์ PDF</a>
+                          <a
+                          href={`http://localhost:3300${list.path}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {list.path}
+                        </a>
+
                         </td>
                         </tr>
                     </tbody>

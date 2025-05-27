@@ -97,12 +97,13 @@ export const fetchUserAnswer = async (formID, accountID) => {
       }
     };
 
-export const generatePDF = async (formTitle, additional, username) => {
+export const generatePDF = async (formTitle, formID, username, userID) => {
       try {
         const res = await axios.post(`${formRoutes}/generate-pdf`, {
-            title: formTitle,
-            additional: additional,
-            username: username
+            formTitle: formTitle,
+            formID: formID,
+            username: username,
+            userID: userID,
         })
       } catch (err) {
         console.error('fail to generate PDF:', err.message);

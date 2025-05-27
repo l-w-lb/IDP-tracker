@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useUser } from '../context/userContext.js';
 
 import '../styles/form.css';
 import '../styles/global.css';
@@ -11,6 +12,8 @@ import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer
 
 function Form() {
   const { id } = useParams();
+  const { user } = useUser();
+  console.log('user', user)
 
   const navigate = useNavigate();
 
@@ -51,10 +54,10 @@ function Form() {
       }
     };
 
-  const generatePDF = async (formTitle, additional, username) => {
+  const genPDF = async (formTitle, formID, data, userID) => {
     console.log('pdf generated');
       try {
-        const genPDF = await generatePDF(formTitle, additional, username);
+        const genPDF = await generatePDF(formTitle, formID, data, userID);
       } catch (err) {
         console.error('fail to generates PDF:', err.message);
       }
@@ -155,7 +158,7 @@ function Form() {
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
       insertAnswer(result);
-      generatePDF(formTitle,1,2);
+      genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
     };

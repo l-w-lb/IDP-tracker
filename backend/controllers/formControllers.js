@@ -43,7 +43,6 @@ const getPartTopicQuestion = (req, res) => {
 
 const insertUserAnswer = (req, res) => {
   const value = req.body.value;
-  console.log(value)
   const sql = `INSERT INTO useranswer (questionID, accountID, groupInstance, text)
       VALUES ?
       ON DUPLICATE KEY UPDATE
