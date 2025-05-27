@@ -4,12 +4,11 @@ import { useUser } from '../context/userContext.js';
 
 import '../styles/navbar.css'
 
-import { checkLogin, logout } from '../services/authServices';
+import { logout } from '../services/authServices';
 
 function Navbar() {
   const [username, setUsername] = useState('');
   const { user } = useUser();
-  console.log('user',user)
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -22,23 +21,7 @@ function Navbar() {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await checkLogin();
-        console.log('auth',res)
-
-        if (res.loggedIn) {
-          setUsername(res.username);
-        } else {
-          navigate('/')
-        }
-
-      } catch (err) {
-        console.error('Session error:', err);
-      }
-    };
-
-    fetchUser();
+      setUsername(user.username)
   }, []);
 
   return (

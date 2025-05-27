@@ -12,7 +12,7 @@ function FormList() {
         const loadData = async () => {
           try {
             const formList = await fetchFormList();
-            console.log(formList)
+            // console.log(formList)
             setFormList(formList);
             
           } catch (err) {
@@ -28,7 +28,7 @@ function FormList() {
         <div className="card p-4 my-3 text-center center-card">
             <div className="title">รายการแบบสอบถาม</div>
 
-            <table class="table mt-3">
+            <table className="table mt-3">
                 <thead>
                     <tr>
                     <th scope="col">#</th>

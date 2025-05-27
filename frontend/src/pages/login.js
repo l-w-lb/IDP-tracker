@@ -3,6 +3,7 @@ import '../styles/login.css'
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/userContext.js';
 
 import { fetchUserData } from '../services/authServices';
 
@@ -10,6 +11,7 @@ function Login () {
     const [loginStatus, setLoginStatus] = useState(false);
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const { setUser } = useUser();
 
     const navigate = useNavigate();
 
@@ -23,6 +25,11 @@ function Login () {
                 if (getLoginStatus.message === 'เข้าสู่ระบบแล้ว'){
                     setLoginStatus(true)
                     if(getLoginStatus.user.role === 'user') {
+                        const fullUser = {
+                            ...getLoginStatus.user,
+                            loggedIn: true
+                        };
+                        setUser(fullUser);
                         navigate('/formList')
                     } else if (getLoginStatus.user.role === 'approver') {
                         navigate('/approvalList')

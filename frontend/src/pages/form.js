@@ -154,7 +154,7 @@ function Form() {
           return
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      // insertAnswer(result);
+      insertAnswer(result);
       generatePDF(formTitle,1,2);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');

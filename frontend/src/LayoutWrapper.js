@@ -1,6 +1,8 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation,useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useUser } from './context/userContext.js';
+
+import { checkLogin } from './services/authServices.js';
 
 import './App.css';
 
@@ -13,17 +15,31 @@ import ApprovalList from './pages/approvalList.js';
 function LayoutWrapper() {
   const location = useLocation();
   const { setUser } = useUser();
+  const navigate = useNavigate();
 
   const hideNavbarOn = ['/'];
   const shouldHideNavbar = hideNavbarOn.includes(location.pathname);
 
   
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, []);
+      const fetchUser = async () => {
+        try {
+          const res = await checkLogin();
+          console.log('auth',res)
+  
+          if (res.loggedIn) {
+            setUser(res)
+          } else {
+            navigate('/')
+          }
+  
+        } catch (err) {
+          console.error('Session error:', err);
+        }
+      };
+  
+      fetchUser();
+    }, []);
 
   return (
     <>
