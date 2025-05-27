@@ -56,7 +56,9 @@ export const fetchformData = async (id, userID) => {
               example: item.EXAMPLE,
               required: item.required,
               type: item.type,
-              answer: [{answer: item.userAnswer, groupInstance: item.groupInstance}],
+              answer: item.userAnswer != null
+                  ? [{ answer: item.userAnswer, groupInstance: item.groupInstance ?? 0 }]
+                  : [],
               listboxValue: []
             };
             topic.questions.push(question);

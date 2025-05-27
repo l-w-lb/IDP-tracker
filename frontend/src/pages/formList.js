@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/userContext.js';
+import { BASE_URL } from '../config.js';
 
 import { fetchFormList } from '../services/formListServices';
 
@@ -52,7 +53,7 @@ function FormList() {
                         <td>
                           {list.path ? (
                             <a
-                              href={`http://localhost:3300${list.path}`}
+                              href={`${BASE_URL}${list.path}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

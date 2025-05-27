@@ -32,7 +32,8 @@ function Login () {
                         
                     if(getLoginStatus.user.role === 'user') {
                         navigate('/formList')
-                    } else if (getLoginStatus.user.role === 'approver') {
+                    // } else if (getLoginStatus.user.role === 'approver') {
+                    } else {
                         navigate('/approvalList')
                     }
 

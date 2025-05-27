@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { fetchApprovalList } from '../services/approvalListServices.js';
-import PdfPreview from './pdfPreview.js';
+// import PdfPreview from './PDFViewer.js';
 
 function ApprovalList() {
     // const { user } = useUser();
@@ -35,7 +35,7 @@ function ApprovalList() {
                 <thead>
                     <tr>
                     <th scope="col">#</th>
-                    <th scope="col">ชื่อเอกสาร</th>
+                    <th scope="col">แบบสอบถาม</th>
                     <th scope="col">สถานะ</th>
                     <th scope="col">pdf</th>
                     </tr>
@@ -48,7 +48,9 @@ function ApprovalList() {
                         <td>{list.status}</td>
                         <td>
                           <a
-                          href={`http://localhost:3300${list.path}`}
+                          href={`http://localhost:3000/pdfPreviewer${list.path}`}
+                        //   href={`http://localhost:3300/pdfPreviewer${list.path}`}
+                          target="_blank"
                           rel="noopener noreferrer"
                         >
                           {list.path}

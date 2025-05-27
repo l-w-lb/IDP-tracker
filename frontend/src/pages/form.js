@@ -235,7 +235,7 @@ function Form() {
                                                       type="text"
                                                       className="input-field"
                                                       placeholder="คำตอบของคุณ"
-                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer}
+                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer || ''}
                                                       onChange={(e) => {
                                                         handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, multipleIndex, e.target.value)
                                                       }}
@@ -293,7 +293,7 @@ function Form() {
                                                   type="text"
                                                   className="input-field"
                                                   placeholder="คำตอบของคุณ"
-                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer}
+                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
                                                       onChange={(e) => {
                                                         handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
                                                       }}                                                
