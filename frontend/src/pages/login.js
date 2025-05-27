@@ -24,12 +24,13 @@ function Login () {
                 const getLoginStatus = await fetchUserData(username, password);
                 if (getLoginStatus.message === 'เข้าสู่ระบบแล้ว'){
                     setLoginStatus(true)
-                    if(getLoginStatus.user.role === 'user') {
-                        const fullUser = {
+                    const fullUser = {
                             ...getLoginStatus.user,
                             loggedIn: true
                         };
                         setUser(fullUser);
+                        
+                    if(getLoginStatus.user.role === 'user') {
                         navigate('/formList')
                     } else if (getLoginStatus.user.role === 'approver') {
                         navigate('/approvalList')

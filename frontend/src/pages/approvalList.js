@@ -1,35 +1,66 @@
 import '../styles/global.css';
 
+// import { useUser } from '../context/userContext.js';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
+import { fetchApprovalList } from '../services/approvalListServices.js';
+import PdfPreview from './pdfPreview.js';
+
 function ApprovalList() {
+    // const { user } = useUser();
+
+    const [approvalList, setApprovalList] = useState([]);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+            const formList = await fetchApprovalList();
+            setApprovalList(formList);
+            
+            } catch (err) {
+            console.error('Error loading form data:', err.message);
+            }
+        };
+    
+        loadData();
+    }, []);
+
   return (
     <div>
         <div className="card p-4 my-3 text-center center-card">
-            <div className="title">รายการอนุมัติ</div>
+            <div className="title">รายการการอนุมัติ</div>
 
-            <table class="table mt-3">
+            <table className="table mt-3">
                 <thead>
                     <tr>
                     <th scope="col">#</th>
-                    <th scope="col">แบบสอบถาม</th>
+                    <th scope="col">ชื่อเอกสาร</th>
                     <th scope="col">สถานะ</th>
                     <th scope="col">pdf</th>
                     </tr>
                 </thead>
-                {/* {formList.map((list, index) => (
-                    <tbody key={index}> */}
-                    <tbody>
+                {approvalList.map((list, index) => (
+                    <tbody key={index}>
                         <tr>
-                        <th scope="row">1</th>
+                        <th scope="row">{index+1}</th>
+                        <td>{list.title}</td>
+                        <td>{list.status}</td>
                         <td>
-                            ok
+                          <a
+                          href={`http://localhost:3300${list.path}`}
+                          rel="noopener noreferrer"
+                        >
+                          {list.path}
+                        </a>
+
                         </td>
-                        <td>waiting</td>
-                        <td>user@gmail.com_.pdf</td>
                         </tr>
                     </tbody>
-                {/* ))} */}
+                ))}
             </table>
         </div>
+        
     </div>
   );
 }
