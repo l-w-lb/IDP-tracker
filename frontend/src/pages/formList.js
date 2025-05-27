@@ -2,17 +2,19 @@ import '../styles/global.css';
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useUser } from '../context/userContext.js';
 
 import { fetchFormList } from '../services/formListServices';
 
 function FormList() {
+    const { user } = useUser();
+
     const [formList, setFormList] = useState([]);
 
     useEffect(() => {
         const loadData = async () => {
           try {
-            const formList = await fetchFormList();
-            console.log(formList)
+            const formList = await fetchFormList(user.id);
             setFormList(formList);
             
           } catch (err) {
@@ -46,16 +48,19 @@ function FormList() {
                                 {list.title}
                             </Link>
                         </td>
-                        <td>{list.status}</td>
+                        <td>{list.status ? list.status : '-'}</td>
                         <td>
-                          <a
-                          href={`http://localhost:3300${list.path}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {list.path}
-                        </a>
-
+                          {list.path ? (
+                            <a
+                              href={`http://localhost:3300${list.path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {list.path}
+                            </a>
+                          ) : (
+                            '-'
+                          )}
                         </td>
                         </tr>
                     </tbody>

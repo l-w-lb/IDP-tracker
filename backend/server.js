@@ -7,6 +7,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const formRoutes = require('./routes/formRoutes'); 
 const formListRoutes = require('./routes/formListRoutes'); 
+const approvalListRoutes = require('./routes/approvalListRoutes')
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(
 app.use('/api/auth', authRoutes); 
 app.use('/api/form', formRoutes); 
 app.use('/api/formList', formListRoutes); 
+app.use('/api/approvalList', approvalListRoutes); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = process.env.PORT || 5000;

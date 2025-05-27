@@ -13,7 +13,8 @@ import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer
 function Form() {
   const { id } = useParams();
   const { user } = useUser();
-  console.log('user', user)
+  const accountID = user.id;
+  console.log('user', accountID)
 
   const navigate = useNavigate();
 
@@ -23,7 +24,7 @@ function Form() {
 
   // mockup data
   // let id = 1; //formID
-  let accountID = 3;
+  // let accountID = 3;
 
   useEffect(() => {
     const loadData = async () => {
@@ -35,7 +36,7 @@ function Form() {
         const structure = await fetchformData(id);
         setFormData(structure);
 
-        const userAnswer = await fetchUserAnswer(id,accountID);
+        // const userAnswer = await fetchUserAnswer(id,accountID);
         console.log('get data',structure);
         
       } catch (err) {

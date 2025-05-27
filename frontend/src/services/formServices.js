@@ -15,6 +15,7 @@ export const fetchformData = async (id) => {
         const res = await axios.post(`${formRoutes}/get-part-topic-question`, {
           id: id
         });
+        console.log('ff',res)
         const rawData = res.data;
         const partMap = {};
 
@@ -85,17 +86,18 @@ export const insertUserAnswer = async (value) => {
       }
     };
 
-export const fetchUserAnswer = async (formID, accountID) => {
-      try {
-        const res = await axios.post(`${formRoutes}/get-user-answer`, {
-          formID: formID,
-          accountID: accountID
-        });
-        return res.data;
-      } catch (err) {
-        console.error('fail to insert data:', err.message);
-      }
-    };
+// export const fetchUserAnswer = async (formID, accountID) => {
+//       try {
+//         const res = await axios.post(`${formRoutes}/get-user-answer`, {
+//           formID: formID,
+//           accountID: accountID
+//         });
+//         console.log(res)
+//         return res.data;
+//       } catch (err) {
+//         console.error('fail to insert data:', err.message);
+//       }
+//     };
 
 export const generatePDF = async (formTitle, formID, username, userID) => {
       try {

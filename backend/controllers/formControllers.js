@@ -64,12 +64,13 @@ const getUserAnswer = (req, res) => {
       JOIN topic ON topic.id = question.topicID
       JOIN part ON part.id = topic.partID
       JOIN form ON form.id = part.formID
-      WHERE useranswer.accountID = 3
-      AND form.id = 3
+      WHERE useranswer.accountID = ?
+      AND form.id = ?
       ORDER BY 
       	question.id ASC,
       	useranswer.groupInstance ASC
   `;
+  console.log(formID,accountID)
   
   db.query(sql, [accountID, formID], (err, result) => {
     if (err) throw err;
