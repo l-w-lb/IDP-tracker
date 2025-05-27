@@ -1,4 +1,5 @@
 import '../styles/global.css';
+import '../styles/formList.css';
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -45,12 +46,15 @@ function FormList() {
                         <tr>
                         <th scope="row">{index+1}</th>
                         <td>
-                            <Link to={`/form/${list.id}/${list.title}`} className="form-link">
+                            <Link to={`/form/${list.id}/${list.title}`} 
+                              className="form-link ellipsis"
+                              title={`${list.title}`}
+                            >
                                 {list.title}
                             </Link>
                         </td>
                         <td>{list.status ? list.status : '-'}</td>
-                        <td>
+                        <td className="ellipsis" title={list.path}>
                           {list.path ? (
                             <a
                               href={`${BASE_URL}${list.path}`}

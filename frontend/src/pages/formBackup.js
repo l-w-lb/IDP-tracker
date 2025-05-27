@@ -10,7 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
-function Form() {
+function FormB() {
   const { id } = useParams();
   const { user } = useUser();
   const accountID = user.id;
@@ -27,7 +27,7 @@ function Form() {
   // let accountID = 3;
 
   useEffect(() => {
-    if (!user || !user.id) return; 
+    if (!user || !user.id) return;  
 
     const accountID = user.id;
 
@@ -194,49 +194,69 @@ function Form() {
                           <div className="mb-3 question">
                             {topicElement.type === "multipleAnswer" ? (
                               <div>
-                                  {topicElement.questions.map((question, questionIndex) => {
-                                    return (
-                                        <div key={question.id}>
-                                            <div 
-                                              className="mb-1 mt-1">{question.question}
-                                              {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
-                                            </div>
-                                            <div className="mb-1 mt-1 example">{question.example}</div>
-
-                                            {question.type === 'listbox' ? (
-                                                <div className="mb-4 mt-2">
-                                                  <select
-                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
-                                                      className='listbox'
-                                                      onChange={(e) => {
-                                                        const newValue = e.target.value;
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, newValue); 
-                                                      }}
-                                                    >
-                                                      <option value="" disabled>เลือก</option>
-                                                      {question.listboxValue.map((item, itemIndex) => (
-                                                        <option key={itemIndex} value={item}>
-                                                          {item}
-                                                        </option>
-                                                      ))}
-                                                  </select>
-                                                </div>
-                                            ) : (
-                                              <div className="mb-4">
-                                                <input
-                                                  type="text"
-                                                  className="input-field"
-                                                  placeholder="คำตอบของคุณ"
-                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
-                                                      onChange={(e) => {
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
-                                                      }}                                                
-                                                />
-                                              </div>
-                                            )}
-                                        </div>
+                                  {Array.from({
+                                    length: Math.max(
+                                      topicElement.topicDetail.add ?? 1,
+                                      ...topicElement.questions.map(q => q.answer?.length ?? 0)
                                     )
-                                  })}
+                                  }).map((_, multipleIndex) => (
+                                    <div key={multipleIndex}>
+                                      {topicElement.questions.map((question, questionIndex) => {
+                                        return (
+                                            <div key={question.id}>
+                                                <div 
+                                                  className="mb-1 mt-1">{question.question}
+                                                  {(multipleIndex < topicElement.topicDetail.min && Boolean(question.required) && <span style={{ color: 'red' }}> *</span>)}
+                                                </div>
+
+                                                <div className="mb-1 mt-1 example">{question.example}</div>
+                                              
+                                                {question.type === 'listbox' ? (
+                                                    <div className="mb-4 mt-2">
+                                                      <select
+                                                          value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer || ''}
+                                                          className='listbox'
+                                                          onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, multipleIndex, newValue); 
+                                                          }}
+                                                        >
+                                                          <option value="" disabled>เลือก</option>
+                                                          {question.listboxValue.map((item, itemIndex) => (
+                                                            <option key={itemIndex} value={item}>
+                                                              {item}
+                                                            </option>
+                                                          ))}
+                                                      </select>
+                                                    </div>
+                                                ) : (
+                                                  <div className="mb-4">
+                                                    <input
+                                                      type="text"
+                                                      className="input-field"
+                                                      placeholder="คำตอบของคุณ"
+                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer.find(a => a.groupInstance === multipleIndex)?.answer || ''}
+                                                      onChange={(e) => {
+                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, multipleIndex, e.target.value)
+                                                      }}
+                                                    />
+                                                  </div>
+                                                )}
+                                            </div>
+                                        )
+                                      })}
+                                      <hr className='my-5'></hr>                
+                                    </div>
+                                  ))}
+
+                                  <div className="d-flex justify-content-center">
+                                    <button 
+                                      className="btn-plus"
+                                      onClick={() => handlePlusClick(formDataIndex, topicElementIndex)}
+                                    >
+                                      <i className="bi bi-plus-circle-fill fs-2 mt-3"></i>
+                                    </button>
+                                  </div>
                               </div>
                             ):(
                                 <div>
@@ -307,4 +327,4 @@ function Form() {
   );
 }
 
-export default Form;
+export default FormB;

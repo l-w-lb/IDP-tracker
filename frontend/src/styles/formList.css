@@ -1,4 +1,13 @@
-.form-link {
+/* .form-link {
     color: black !important;
     text-decoration: none;
+} */
+
+.ellipsis {
+  white-space: nowrap;        /* ไม่ขึ้นบรรทัดใหม่ */
+  overflow: hidden;           /* ซ่อนส่วนที่เกิน */
+  text-overflow: ellipsis;    /* ใส่ ... */
+  max-width: 200px;           /* ความกว้างสูงสุด */
+  display: inline-block;      /* หรือ block (ขึ้นกับ element) */
+  vertical-align: middle;
 }
