@@ -8,13 +8,12 @@ import '../styles/global.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-import { fetchTitleDescription, fetchUserAnswer, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
 function Form() {
   const { id } = useParams();
   const { user } = useUser();
   const accountID = user.id;
-  console.log('user', accountID)
 
   const navigate = useNavigate();
 
@@ -39,6 +38,7 @@ function Form() {
 
         const structure = await fetchformData(id, accountID);
         setFormData(structure);
+        console.log(structure);
       } catch (error) {
         console.error('Load error:', error);
       }
@@ -72,7 +72,7 @@ function Form() {
     const question = { ...questions[questionIndex] };
 
     const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
-      ? question.answer.map(a =>
+      ? question.answer?.map(a =>
           a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
         )
       : [...question.answer, { groupInstance, answer: newAnswer }];
@@ -80,15 +80,16 @@ function Form() {
     question.answer = updatedAnswers;
     questions[questionIndex] = question;
     updated[partIndex].topics[topicIndex].questions = questions;
-    console.log(updated)
+    // console.log(updated)
     return updated;
   });
 };
 
 
-  const handlePlusClick = (partIndex, topicIndex) => {
+  const handlePlusMinusClick = (partIndex, topicIndex, action) => {
     let currentValue = formData[partIndex]?.topics[topicIndex]?.topicDetail?.add || 0;
-    currentValue += 1;
+    const min = formData[partIndex]?.topics[topicIndex]?.topicDetail?.min || 1;
+    currentValue = Math.max(currentValue + action, min);
     setFormData(prevFormData => {
         const updatedFormData = [...prevFormData];
           updatedFormData[partIndex].topics[topicIndex].topicDetail.add = currentValue;
@@ -108,7 +109,6 @@ function Form() {
               let hasAnyAnswer = true;
               if (topic.type === 'multipleAnswer') {
                   const min = topic.topicDetail?.min;
-                  console.log(min)
                   for (let i = 0; i < min; i++) {
                     const found = question.answer.find(
                       a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
@@ -139,7 +139,7 @@ function Form() {
           topic.questions.forEach(question => {
             if (Array.isArray(question.answer)) {
               question.answer.forEach((a, instanceIndex) => {
-                if (a.answer && a.answer.trim() !== '') {
+                if (a.answer != null) {
                   result.push([
                     question.id,
                     accountID,
@@ -154,7 +154,7 @@ function Form() {
       });
 
       
-      if (result == '') {
+      if (result === '') {
           alert("ยังไม่ได้มีการกรอกคำตอบ");
           return
       }
@@ -164,6 +164,23 @@ function Form() {
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
     };
+
+    const handleTopicNav = (partIndex, topicIndex, direction, maxPages) => {
+      setFormData(prev => {
+        const updated = [...prev];
+        const topic = updated[partIndex].topics[topicIndex];
+        const current = topic.topicDetail.currentIndex || 0;
+        const next = Math.min(Math.max(current + direction, 0), maxPages - 1);
+        console.log(next)
+        updated[partIndex].topics[topicIndex].topicDetail.currentIndex = next;
+        return updated;
+      });
+    };
+
+    // useEffect(() => {
+    //   console.log(formData)
+    // },[formData])
+
 
   return (
       <div >
@@ -176,7 +193,7 @@ function Form() {
         </div>
 
         {/* formData */}
-        {formData.map((part, formDataIndex) => (
+        {formData?.map((part, formDataIndex) => (
           <div key={formData.id}>
                 {part.part && (
                     <div className="card p-4 my-3 text-center part center-card">
@@ -185,16 +202,21 @@ function Form() {
                 )}
 
             <div>
-                {part.topics.map((topicElement, topicElementIndex) => 
-                    <div key={topicElement.id}>
+                {part?.topics?.map((topicElement, topicElementIndex) => {
+
+                    return (
+                      <div key={topicElement.id}>
                         <div className="card p-4 my-3 center-card">
                           <div className="mb-1 mt-1 topic">{topicElement.topic}</div>
                           <div className="mb-1 mt-1 description">{topicElement.description}</div>
                           <hr />
                           <div className="mb-3 question">
+
+                            {/* multipleAnswer */}
                             {topicElement.type === "multipleAnswer" ? (
                               <div>
-                                  {topicElement.questions.map((question, questionIndex) => {
+                                  {topicElement?.questions?.map((question, questionIndex) => {
+                                    
                                     return (
                                         <div key={question.id}>
                                             <div 
@@ -206,7 +228,12 @@ function Form() {
                                             {question.type === 'listbox' ? (
                                                 <div className="mb-4 mt-2">
                                                   <select
-                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
+                                                      value={
+                                                        formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]
+                                                          ?.answer[
+                                                            formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex
+                                                          ]?.answer || ''
+                                                      }
                                                       className='listbox'
                                                       onChange={(e) => {
                                                         const newValue = e.target.value;
@@ -214,7 +241,7 @@ function Form() {
                                                       }}
                                                     >
                                                       <option value="" disabled>เลือก</option>
-                                                      {question.listboxValue.map((item, itemIndex) => (
+                                                      {question?.listboxValue?.map((item, itemIndex) => (
                                                         <option key={itemIndex} value={item}>
                                                           {item}
                                                         </option>
@@ -227,7 +254,13 @@ function Form() {
                                                   type="text"
                                                   className="input-field"
                                                   placeholder="คำตอบของคุณ"
-                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
+                                                  value={
+                                                    formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]
+                                                      ?.answer[
+                                                        formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex
+                                                      ]?.answer || ''
+                                                  }
+
                                                       onChange={(e) => {
                                                         handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
                                                       }}                                                
@@ -237,10 +270,54 @@ function Form() {
                                         </div>
                                     )
                                   })}
+
+                                  <div className="card-navigation-container">
+                                    <button 
+                                      className="arrow left"
+                                      onClick={() => handleTopicNav(formDataIndex, topicElementIndex, -1, topicElement.topicDetail.add)}
+                                      disabled={topicElement.topicDetail.currentIndex === 0}
+                                    >
+                                      <i className="bi bi-caret-left-fill fs-1"></i>
+                                    </button>
+
+                                    {/* <span className="page-info multiple-ans-index mt-5">
+                                        <input
+                                          value={topicElement.topicDetail.currentIndex+1}
+                                          // onChange={'handleInputChange'}
+                                          className="topic-index-input-field"
+                                        />
+                                        / {topicElement.topicDetail.add}
+                                    </span>        */}
+                                    <span className="page-info multiple-ans-index mt-5">{topicElement.topicDetail.currentIndex + 1} / {topicElement.topicDetail.add}</span>
+                                    <div className="d-flex justify-content-center">
+                                      <button
+                                        className='btn-minus'
+                                        onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, -1)}
+                                        disabled={topicElement.topicDetail.add <= topicElement.topicDetail.min}
+                                      >
+                                        <i className="bi bi-dash-circle-fill fs-2 mt-3"></i>
+                                      </button>
+                                      <button 
+                                        className="btn-plus"
+                                        onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, 1)}
+                                      >
+                                        <i className="bi bi-plus-circle-fill fs-2 mt-3"></i>
+                                      </button>
+                                    </div>
+
+                                    <button 
+                                      className="arrow right"
+                                      onClick={() => handleTopicNav(formDataIndex, topicElementIndex, 1, topicElement.topicDetail.add)}
+                                      disabled={topicElement.topicDetail.currentIndex === topicElement.topicDetail.add - 1}
+                                    >
+                                      <i className="bi bi-caret-right-fill fs-1"></i>
+                                    </button>
+                                  </div>
                               </div>
                             ):(
                                 <div>
-                                  {topicElement.questions.map((question, questionIndex) => {
+                                  {/* singleanswer */}
+                                  {topicElement?.questions?.map((question, questionIndex) => {
                                     return (
                                         <div key={question.id}>
                                             <div 
@@ -260,7 +337,7 @@ function Form() {
                                                       }}
                                                     >
                                                       <option value="" disabled>เลือก</option>
-                                                      {question.listboxValue.map((item, itemIndex) => (
+                                                      {question?.listboxValue?.map((item, itemIndex) => (
                                                         <option key={itemIndex} value={item}>
                                                           {item}
                                                         </option>
@@ -288,6 +365,9 @@ function Form() {
                           </div>
                         </div>
                       </div>
+                    )
+                }
+                    
                 )}
             </div>
           </div>

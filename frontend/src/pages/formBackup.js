@@ -14,7 +14,6 @@ function FormB() {
   const { id } = useParams();
   const { user } = useUser();
   const accountID = user.id;
-  console.log('user', accountID)
 
   const navigate = useNavigate();
 
@@ -46,6 +45,10 @@ function FormB() {
 
     loadData();
   }, [id, user]); 
+
+  useEffect(() => {
+    console.log(formData)
+  }, [formData]); 
 
 
   const insertAnswer = async (value) => {
@@ -154,7 +157,7 @@ function FormB() {
       });
 
       
-      if (result == '') {
+      if (result === '') {
           alert("ยังไม่ได้มีการกรอกคำตอบ");
           return
       }

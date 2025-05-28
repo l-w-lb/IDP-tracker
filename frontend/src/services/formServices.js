@@ -16,7 +16,6 @@ export const fetchformData = async (id, userID) => {
           formID: id,
           userID: userID
         });
-        console.log('ff',res)
         const rawData = res.data;
         const partMap = {};
 
@@ -40,12 +39,19 @@ export const fetchformData = async (id, userID) => {
               type: item.topicType,
               topicDetail: {
                   ...item.typeDetail,
-                  add: item.typeDetail?.min ?? null
+                  add: 0,
+                  currentIndex: 0
                 },
               questions: []
             };
             currentPart.topics.push(topic);
           }
+          
+          topic.topicDetail.add = Math.max(
+            topic.topicDetail.add || 0,
+            (item.groupInstance ?? 0) + 1,
+            topic.topicDetail.min
+          );          
 
 
           let question = topic.questions.find(q => q.id === item.questionID);
@@ -75,7 +81,6 @@ export const fetchformData = async (id, userID) => {
             question.listboxValue.push(item.text);
           }
         });
-
         return Object.values(partMap);
     };
 
