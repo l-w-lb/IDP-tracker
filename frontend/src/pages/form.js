@@ -166,12 +166,10 @@ function Form() {
     };
 
     const handleTopicNav = (partIndex, topicIndex, direction, maxPages) => {
+      const current = formData[partIndex].topics[topicIndex].topicDetail.currentIndex || 0;
+      const next = Math.min(Math.max(current + direction, 0), maxPages - 1);
       setFormData(prev => {
         const updated = [...prev];
-        const topic = updated[partIndex].topics[topicIndex];
-        const current = topic.topicDetail.currentIndex || 0;
-        const next = Math.min(Math.max(current + direction, 0), maxPages - 1);
-        console.log(next)
         updated[partIndex].topics[topicIndex].topicDetail.currentIndex = next;
         return updated;
       });
@@ -315,6 +313,7 @@ function Form() {
                                   </div>
                               </div>
                             ):(
+
                                 <div>
                                   {/* singleanswer */}
                                   {topicElement?.questions?.map((question, questionIndex) => {
