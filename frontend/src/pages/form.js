@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+
 import { useUser } from '../context/userContext.js';
+import { useFormContext } from '../context/FormContext.js';
 
 import '../styles/form.css';
 import '../styles/global.css';
@@ -11,9 +13,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
 function Form() {
-  const { id } = useParams();
+  // const { id } = useParams();
   const { user } = useUser();
+  const { form } = useFormContext();
   const accountID = user.id;
+  const id = form.formID;
+  console.log(form)
 
   const navigate = useNavigate();
 
@@ -219,7 +224,7 @@ function Form() {
                                         <div key={question.id}>
                                             <div 
                                               className="mb-1 mt-1">{question.question}
-                                              {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+                                              {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required) && <span style={{ color: 'red' }}> *</span>)}
                                             </div>
                                             <div className="mb-1 mt-1 example">{question.example}</div>
 

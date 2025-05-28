@@ -3,13 +3,16 @@ import '../styles/formList.css';
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useUser } from '../context/userContext.js';
 import { BASE_URL } from '../config.js';
+
+import { useUser } from '../context/userContext.js';
+import { useFormContext } from '../context/FormContext.js';
 
 import { fetchFormList } from '../services/formListServices';
 
 function FormList() {
     const { user } = useUser();
+    const { setForm } = useFormContext();
 
     const [formList, setFormList] = useState([]);
 
@@ -46,9 +49,11 @@ function FormList() {
                         <tr>
                         <th scope="row">{index+1}</th>
                         <td>
-                            <Link to={`/form/${list.id}/${list.title}`} 
+                            <Link 
+                              to={`/form/${list.title}`} 
                               className="form-link ellipsis"
                               title={`${list.title}`}
+                              onClick={() => setForm({formID: list.id})} 
                             >
                                 {list.title}
                             </Link>

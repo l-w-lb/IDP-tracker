@@ -51,7 +51,7 @@ const getPartTopicQuestion = (req, res) => {
   `;
 
   db.query(sql, [userID, formID], (err, result) => {
-    console.log(res)
+    // console.log(res)
     if (err) throw err;
     res.json(result);
   });

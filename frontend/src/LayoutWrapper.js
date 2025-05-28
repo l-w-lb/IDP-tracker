@@ -49,7 +49,7 @@ function LayoutWrapper() {
       <Routes>
         <Route path="/" element={<Login />} />
 
-        <Route path="/form/:id/:formTitle" element={<Form />} />
+        <Route path="/form/:formTitle" element={<Form />} />
         <Route path="/formB/:id/:formTitle" element={<FormB />} />
         <Route path="/formList" element={<FormList />} />
 
