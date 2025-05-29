@@ -13,12 +13,11 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
 function Form() {
-  // const { id } = useParams();
   const { user } = useUser();
-  const { form } = useFormContext();
+  const { form, setForm } = useFormContext();
   const accountID = user.id;
   const id = form.formID;
-  console.log(form)
+  // console.log(form)
 
   const navigate = useNavigate();
 
@@ -70,26 +69,45 @@ function Form() {
       }
   }
 
+  // const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
+  //   setFormData(prevFormData => {
+  //     const updated = [...prevFormData];
+  //     const questions = [...updated[partIndex].topics[topicIndex].questions];
+  //     const question = { ...questions[questionIndex] };
+
+  //     const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
+  //       ? question.answer?.map(a =>
+  //           a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
+  //         )
+  //       : [...question.answer, { groupInstance, answer: newAnswer }];
+
+  //     question.answer = updatedAnswers;
+  //     questions[questionIndex] = question;
+  //     updated[partIndex].topics[topicIndex].questions = questions;
+  //     console.log(updated)
+  //     return updated;
+  //   });
+  // };
+
   const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
-  setFormData(prevFormData => {
-    const updated = [...prevFormData];
-    const questions = [...updated[partIndex].topics[topicIndex].questions];
-    const question = { ...questions[questionIndex] };
+    setFormData(prevFormData => {
+      const updated = [...prevFormData];
+      const questions = [...updated[partIndex].topics[topicIndex].questions];
+      const question = { ...questions[questionIndex] };
 
-    const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
-      ? question.answer?.map(a =>
-          a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
-        )
-      : [...question.answer, { groupInstance, answer: newAnswer }];
+      const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
+        ? question.answer?.map(a =>
+            a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
+          )
+        : [...question.answer, { groupInstance, answer: newAnswer, id }];
 
-    question.answer = updatedAnswers;
-    questions[questionIndex] = question;
-    updated[partIndex].topics[topicIndex].questions = questions;
-    // console.log(updated)
-    return updated;
-  });
-};
-
+      question.answer = updatedAnswers;
+      questions[questionIndex] = question;
+      updated[partIndex].topics[topicIndex].questions = questions;
+      console.log(updated)
+      return updated;
+    });
+  };
 
   const handlePlusMinusClick = (partIndex, topicIndex, action) => {
     let currentValue = formData[partIndex]?.topics[topicIndex]?.topicDetail?.add || 0;
@@ -102,8 +120,23 @@ function Form() {
     })
   };
 
-  const handleBack = () => {
-    navigate('/formList')
+  const handleBack = (partID) => {
+    // navigate('/formList')
+    setForm(prev => {
+      const update = {...prev};
+      update.partID = partID;
+      console.log(update)
+      return update;
+    })
+  }
+
+  const handelNext = (partID) => {
+    setForm(prev => {
+      const update = {...prev};
+      update.partID = partID;
+      console.log(update)
+      return update;
+    })
   }
 
   const handleSubmit = () => {
@@ -195,197 +228,247 @@ function Form() {
             </div>
         </div>
 
-        {/* formData */}
-        {formData?.map((part, formDataIndex) => (
-          <div key={formData.id}>
-                {part.part && (
-                    <div className="card p-4 my-3 text-center part center-card">
-                      <div>{part.part}</div>
-                    </div>
-                )}
+        {/* part topic question */}
+        {formData?.map((part, formDataIndex) => {
+            return part.id === form.partID &&  (
+              <div key={formData.id}>
+                    { 
+                        part.part && (
+                          <div className="card p-4 my-3 text-center part center-card">
+                            <div>{part.part}</div>
+                          </div>
+                      )
+                    }
 
-            <div>
-                {part?.topics?.map((topicElement, topicElementIndex) => {
+                <div>
+                    {
+                      part?.topics?.map((topicElement, topicElementIndex) => {
+                        return (
+                          <div key={topicElement.id}>
+                            <div className="card p-4 my-3 center-card">
+                              <div className="mb-1 mt-1 topic">{topicElement.topic}</div>
+                              <div className="mb-1 mt-1 description">{topicElement.description}</div>
+                              <hr />
+                              <div className="mb-3 question">
 
-                    return (
-                      <div key={topicElement.id}>
-                        <div className="card p-4 my-3 center-card">
-                          <div className="mb-1 mt-1 topic">{topicElement.topic}</div>
-                          <div className="mb-1 mt-1 description">{topicElement.description}</div>
-                          <hr />
-                          <div className="mb-3 question">
-
-                            {/* multipleAnswer */}
-                            {topicElement.type === "multipleAnswer" ? (
-                              <div>
-                                  {topicElement?.questions?.map((question, questionIndex) => {
-                                    
-                                    return (
-                                        <div key={question.id}>
-                                            <div 
-                                              className="mb-1 mt-1">{question.question}
-                                              {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required) && <span style={{ color: 'red' }}> *</span>)}
+                                {/* show old answer */}
+                                {topicElement.topicDetail.inherit && (
+                                  <div className='my-4'>
+                                    <div>
+                                      {
+                                        (() => {
+                                          const inheritedTopic = formData
+                                              .flatMap(p => p.topics)
+                                              .find(t => t.id === topicElement.topicDetail.inherit);
+                                          return inheritedTopic ? (
+                                            <div>
+                                              {inheritedTopic.questions.map((question, questionIndex) => {
+                                                console.log(question.answer)
+                                                return (
+                                                  <div key={questionIndex}>
+                                                    <div className="mb-1 mt-1 question">{question.question}</div>
+                                                    {question.answer.map((answer, answerIndex) => {
+                                                      return (
+                                                          <div key={answerIndex}>
+                                                            <div>{answer.answer}</div>
+                                                          </div>
+                                                      )
+                                                    })}
+                                                  </div>
+                                                )
+                                              })}
                                             </div>
-                                            <div className="mb-1 mt-1 example">{question.example}</div>
+                                          ) : (
+                                            <div>ไม่พบหัวข้อที่สืบทอด</div>
+                                          );
+                                      })()}
+                                    </div>
+                                    <hr className='my-5'/>
+                                  </div>
+                                )}
 
-                                            {question.type === 'listbox' ? (
-                                                <div className="mb-4 mt-2">
-                                                  <select
+                                {/* multipleAnswer */}
+                                {topicElement.type === "multipleAnswer" ? (
+                                  <div>
+                                      {topicElement?.questions?.map((question, questionIndex) => {
+                                        
+                                        return (
+                                            <div key={question.id}>
+                                                <div 
+                                                  className="mb-1 mt-1">{question.question}
+                                                  {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required) && <span style={{ color: 'red' }}> *</span>)}
+                                                </div>
+                                                <div className="mb-1 mt-1 example">{question.example}</div>
+
+                                                {question.type === 'listbox' ? (
+                                                    <div className="mb-4 mt-2">
+                                                      <select
+                                                          value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex]?.answer || ''}
+                                                          className='listbox'
+                                                          onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            console.log(newValue)
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex, newValue); 
+                                                          }}
+                                                        >
+                                                          <option value="" disabled>เลือก</option>
+                                                          {question?.listboxValue?.map((item, itemIndex) => (
+                                                            <option key={itemIndex} value={item.listbox}>
+                                                              {item.listbox}
+                                                            </option>
+                                                          ))}
+                                                      </select>
+                                                    </div>
+                                                ) : (
+                                                  <div className="mb-4">
+                                                    <input
+                                                      type="text"
+                                                      className="input-field"
+                                                      placeholder="คำตอบของคุณ"
                                                       value={
                                                         formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]
                                                           ?.answer[
                                                             formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex
                                                           ]?.answer || ''
                                                       }
-                                                      className='listbox'
-                                                      onChange={(e) => {
-                                                        const newValue = e.target.value;
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, newValue); 
-                                                      }}
-                                                    >
-                                                      <option value="" disabled>เลือก</option>
-                                                      {question?.listboxValue?.map((item, itemIndex) => (
-                                                        <option key={itemIndex} value={item}>
-                                                          {item}
-                                                        </option>
-                                                      ))}
-                                                  </select>
-                                                </div>
-                                            ) : (
-                                              <div className="mb-4">
-                                                <input
-                                                  type="text"
-                                                  className="input-field"
-                                                  placeholder="คำตอบของคุณ"
-                                                  value={
-                                                    formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]
-                                                      ?.answer[
-                                                        formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex
-                                                      ]?.answer || ''
-                                                  }
 
-                                                      onChange={(e) => {
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
-                                                      }}                                                
-                                                />
-                                              </div>
-                                            )}
-                                        </div>
-                                    )
-                                  })}
-
-                                  <div className="card-navigation-container">
-                                    <button 
-                                      className="arrow left"
-                                      onClick={() => handleTopicNav(formDataIndex, topicElementIndex, -1, topicElement.topicDetail.add)}
-                                      disabled={topicElement.topicDetail.currentIndex === 0}
-                                    >
-                                      <i className="bi bi-caret-left-fill fs-1"></i>
-                                    </button>
-
-                                    {/* <span className="page-info multiple-ans-index mt-5">
-                                        <input
-                                          value={topicElement.topicDetail.currentIndex+1}
-                                          // onChange={'handleInputChange'}
-                                          className="topic-index-input-field"
-                                        />
-                                        / {topicElement.topicDetail.add}
-                                    </span>        */}
-                                    <span className="page-info multiple-ans-index mt-5">{topicElement.topicDetail.currentIndex + 1} / {topicElement.topicDetail.add}</span>
-                                    <div className="d-flex justify-content-center">
-                                      <button
-                                        className='btn-minus'
-                                        onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, -1)}
-                                        disabled={topicElement.topicDetail.add <= topicElement.topicDetail.min}
-                                      >
-                                        <i className="bi bi-dash-circle-fill fs-2 mt-3"></i>
-                                      </button>
-                                      <button 
-                                        className="btn-plus"
-                                        onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, 1)}
-                                      >
-                                        <i className="bi bi-plus-circle-fill fs-2 mt-3"></i>
-                                      </button>
-                                    </div>
-
-                                    <button 
-                                      className="arrow right"
-                                      onClick={() => handleTopicNav(formDataIndex, topicElementIndex, 1, topicElement.topicDetail.add)}
-                                      disabled={topicElement.topicDetail.currentIndex === topicElement.topicDetail.add - 1}
-                                    >
-                                      <i className="bi bi-caret-right-fill fs-1"></i>
-                                    </button>
-                                  </div>
-                              </div>
-                            ):(
-
-                                <div>
-                                  {/* singleanswer */}
-                                  {topicElement?.questions?.map((question, questionIndex) => {
-                                    return (
-                                        <div key={question.id}>
-                                            <div 
-                                              className="mb-1 mt-1">{question.question}
-                                              {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+                                                          onChange={(e) => {
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex, e.target.value)
+                                                          }}                                                
+                                                    />
+                                                  </div>
+                                                )}
                                             </div>
-                                            <div className="mb-1 mt-1 example">{question.example}</div>
+                                        )
+                                      })}
 
-                                            {question.type === 'listbox' ? (
-                                                <div className="mb-4 mt-2">
-                                                  <select
-                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
-                                                      className='listbox'
-                                                      onChange={(e) => {
-                                                        const newValue = e.target.value;
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, newValue); 
-                                                      }}
-                                                    >
-                                                      <option value="" disabled>เลือก</option>
-                                                      {question?.listboxValue?.map((item, itemIndex) => (
-                                                        <option key={itemIndex} value={item}>
-                                                          {item}
-                                                        </option>
-                                                      ))}
-                                                  </select>
-                                                </div>
-                                            ) : (
-                                              <div className="mb-4">
-                                                <input
-                                                  type="text"
-                                                  className="input-field"
-                                                  placeholder="คำตอบของคุณ"
-                                                  value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
-                                                      onChange={(e) => {
-                                                        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
-                                                      }}                                                
-                                                />
-                                              </div>
-                                            )}
+                                      <div className="card-navigation-container">
+                                        <button 
+                                          className="arrow left"
+                                          onClick={() => handleTopicNav(formDataIndex, topicElementIndex, -1, topicElement.topicDetail.add)}
+                                          disabled={topicElement.topicDetail.currentIndex === 0}
+                                        >
+                                          <i className="bi bi-caret-left-fill fs-1"></i>
+                                        </button>
+
+                                        {/* <span className="page-info multiple-ans-index mt-5">
+                                            <input
+                                              value={topicElement.topicDetail.currentIndex+1}
+                                              // onChange={'handleInputChange'}
+                                              className="topic-index-input-field"
+                                            />
+                                            / {topicElement.topicDetail.add}
+                                        </span>        */}
+                                        <span className="page-info multiple-ans-index mt-5">{topicElement.topicDetail.currentIndex + 1} / {topicElement.topicDetail.add}</span>
+                                        <div className="d-flex justify-content-center">
+                                          <button
+                                            className='btn-minus'
+                                            onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, -1)}
+                                            disabled={topicElement.topicDetail.add <= topicElement.topicDetail.min}
+                                          >
+                                            <i className="bi bi-dash-circle-fill fs-2 mt-3"></i>
+                                          </button>
+                                          <button 
+                                            className="btn-plus"
+                                            onClick={() => handlePlusMinusClick(formDataIndex, topicElementIndex, 1)}
+                                          >
+                                            <i className="bi bi-plus-circle-fill fs-2 mt-3"></i>
+                                          </button>
                                         </div>
-                                    )
-                                  })}
-                                </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                }
-                    
-                )}
-            </div>
-          </div>
-        ))}
-        
-        <div className="d-flex justify-content-center">
-          <button className="btn btn-success mb-3 mx-2" onClick={handleBack}>
-            Back
-          </button>
-          <button className="btn btn-success mb-3 mx-2" onClick={handleSubmit}>
-            Submit
-          </button>
-        </div>
 
+                                        <button 
+                                          className="arrow right"
+                                          onClick={() => handleTopicNav(formDataIndex, topicElementIndex, 1, topicElement.topicDetail.add)}
+                                          disabled={topicElement.topicDetail.currentIndex === topicElement.topicDetail.add - 1}
+                                        >
+                                          <i className="bi bi-caret-right-fill fs-1"></i>
+                                        </button>
+                                      </div>
+                                  </div>
+                                ):(
+
+                                    <div>
+                                      {/* singleanswer */}
+                                      {topicElement?.questions?.map((question, questionIndex) => {
+                                        return (
+                                            <div key={question.id}>
+                                                <div 
+                                                  className="mb-1 mt-1">{question.question}
+                                                  {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+                                                </div>
+                                                <div className="mb-1 mt-1 example">{question.example}</div>
+
+                                                {question.type === 'listbox' ? (
+                                                    <div className="mb-4 mt-2">
+                                                      <select
+                                                          value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
+                                                          className='listbox'
+                                                          onChange={(e) => {
+                                                            const newValue = e.target.value;
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, newValue); 
+                                                          }}
+                                                        >
+                                                          <option value="" disabled>เลือก</option>
+                                                          {question?.listboxValue?.map((item, itemIndex) => (
+                                                            <option key={itemIndex} value={item.listbox}>
+                                                              {item.listbox}
+                                                            </option>
+                                                          ))}
+                                                      </select>
+                                                    </div>
+                                                ) : (
+                                                  <div className="mb-4">
+                                                    <input
+                                                      type="text"
+                                                      className="input-field"
+                                                      placeholder="คำตอบของคุณ"
+                                                      value={formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer[0]?.answer || ''}
+                                                          onChange={(e) => {
+                                                            handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, 0, e.target.value)
+                                                          }}                                                
+                                                    />
+                                                  </div>
+                                                )}
+                                            </div>
+                                        )
+                                      })}
+                                    </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })
+                    }
+                </div>
+
+                    
+                <div className="d-flex justify-content-center">
+                  {formDataIndex !== 0 && (
+                    <button className="btn btn-success mb-3 mx-2" onClick={() => handleBack(1)}>
+                      กลับ
+                    </button>
+                  )}
+
+                  {formDataIndex === formData.length - 1 ? (
+                    <button className="btn btn-success mb-3 mx-2" onClick={() => handleSubmit()}>
+                      ส่ง
+                    </button>
+                  ) : (
+                    <button className="btn btn-success mb-3 mx-2" onClick={() => handelNext(8)}>
+                      ถัดไป
+                    </button>
+                  )}
+
+                </div>
+
+              </div>
+
+              
+            )
+            
+        })}
+        
       </div>
       
   );

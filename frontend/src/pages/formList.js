@@ -44,7 +44,8 @@ function FormList() {
                     <th scope="col">pdf</th>
                     </tr>
                 </thead>
-                {formList.map((list, index) => (
+                {formList.map((list, index) => {
+                  return (
                     <tbody key={index}>
                         <tr>
                         <th scope="row">{index+1}</th>
@@ -53,7 +54,7 @@ function FormList() {
                               to={`/form/${list.title}`} 
                               className="form-link ellipsis"
                               title={`${list.title}`}
-                              onClick={() => setForm({formID: list.id})} 
+                              onClick={() => setForm({formID: list.formID, partID: list.partID})} 
                             >
                                 {list.title}
                             </Link>
@@ -74,7 +75,7 @@ function FormList() {
                         </td>
                         </tr>
                     </tbody>
-                ))}
+                )})}
             </table>
         </div>
     </div>

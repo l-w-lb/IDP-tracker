@@ -46,12 +46,12 @@ export const fetchformData = async (id, userID) => {
             };
             currentPart.topics.push(topic);
           }
-          
+
           topic.topicDetail.add = Math.max(
             topic.topicDetail.add || 0,
             (item.groupInstance ?? 0) + 1,
             topic.topicDetail.min
-          );          
+          ) || 1;          
 
 
           let question = topic.questions.find(q => q.id === item.questionID);
@@ -62,23 +62,24 @@ export const fetchformData = async (id, userID) => {
               example: item.EXAMPLE,
               required: item.required,
               type: item.type,
-              answer: item.userAnswer != null
-                  ? [{ answer: item.userAnswer, groupInstance: item.groupInstance ?? 0 }]
-                  : [],
+              answer: [],
               listboxValue: []
             };
             topic.questions.push(question);
-          }else {
-            if (item.userAnswer !== undefined) {
-              question.answer.push({
-                answer: item.userAnswer,
-                groupInstance: item.groupInstance ?? 0
-              });
-            }
           }
 
-          if (item.type === "listbox" && item.text) {
-            question.listboxValue.push(item.text);
+          if (item.type === "listbox" && item.listboxText) {
+            const isDuplicate = question.listboxValue.some(v => v.id === item.listboxID);
+              if (!isDuplicate) {
+                question.listboxValue.push({ id: item.listboxID, listbox: item.listboxText });
+              }
+          }
+
+          if (item.userAnswer) {
+            const isDuplicate = question.answer.some(v => v.id === item.answerID);
+              if (!isDuplicate) {
+                question.answer.push({ id: item.answerID, answer: item.userAnswer, groupInstance: item.groupInstance });
+              }
           }
         });
         return Object.values(partMap);
@@ -93,19 +94,6 @@ export const insertUserAnswer = async (value) => {
         console.error('fail to insert data:', err.message);
       }
     };
-
-// export const fetchUserAnswer = async (formID, accountID) => {
-//       try {
-//         const res = await axios.post(`${formRoutes}/get-user-answer`, {
-//           formID: formID,
-//           accountID: accountID
-//         });
-//         console.log(res)
-//         return res.data;
-//       } catch (err) {
-//         console.error('fail to insert data:', err.message);
-//       }
-//     };
 
 export const generatePDF = async (formTitle, formID, username, userID) => {
       try {

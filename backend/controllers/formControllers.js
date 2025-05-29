@@ -26,11 +26,13 @@ const getPartTopicQuestion = (req, res) => {
         question.id AS questionID, 
         topic.description AS topicDescription,
         answertype.type, 
-        listbox.text, 
+        listbox.text AS listboxText, 
+        listbox.id AS listboxID,
         topictype.type AS topicType, 
         topic.typeDetail, 
         useranswer.text AS userAnswer,
-        useranswer.groupInstance
+        useranswer.groupInstance,
+        useranswer.id AS answerID
       FROM question
       JOIN topic ON topic.id = question.topicID
       JOIN part ON part.id = topic.partID
