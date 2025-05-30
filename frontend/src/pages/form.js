@@ -70,26 +70,6 @@ function Form() {
       }
   }
 
-  // const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
-  //   setFormData(prevFormData => {
-  //     const updated = [...prevFormData];
-  //     const questions = [...updated[partIndex].topics[topicIndex].questions];
-  //     const question = { ...questions[questionIndex] };
-
-  //     const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
-  //       ? question.answer?.map(a =>
-  //           a.groupInstance === groupInstance ? { ...a, answer: newAnswer } : a
-  //         )
-  //       : [...question.answer, { groupInstance, answer: newAnswer }];
-
-  //     question.answer = updatedAnswers;
-  //     questions[questionIndex] = question;
-  //     updated[partIndex].topics[topicIndex].questions = questions;
-  //     console.log(updated)
-  //     return updated;
-  //   });
-  // };
-
   const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
     console.log(partIndex, topicIndex, questionIndex, groupInstance, newAnswer)
     setFormData(prevFormData => {
