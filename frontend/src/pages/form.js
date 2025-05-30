@@ -110,7 +110,6 @@ function Form() {
   const handleSubmit = () => {
     for (const section of formData) {
       for (const topic of section.topics) {
-        console.log(topic.children)
           for (const question of topic.questions) {
             if (question.required) {
               let hasAnyAnswer = true;
@@ -141,9 +140,7 @@ function Form() {
           if (Array.isArray(topic.children)) {
             for (const child of topic.children) {
               for (const question of child.questions) {
-                console.log(question)
                 if (question.required) {
-                  console.log('rewure')
                   let hasAnyAnswer = true;
                   if (child.type === 'multipleAnswer') {
                     const min = topic.topicDetail?.min;
@@ -152,7 +149,6 @@ function Form() {
                         a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
                       );
                       if (!found) {
-                        console.log(question);
                         hasAnyAnswer = false;
                       }
                     }
@@ -172,38 +168,53 @@ function Form() {
         }
       }
 
-      const result = [];
+      let result = [];
 
       formData.forEach(part => {
         part.topics.forEach(topic => {
-          topic.questions.forEach(question => {
-            if (Array.isArray(question.answer)) {
-              question.answer.forEach((a, instanceIndex) => {
-                if (a.answer != null) {
-                  result.push([
-                    question.id,
-                    accountID,
-                    a.groupInstance,
-                    a.answer,
-                  ]);
-                }
-              });
-            }
-          });
+          let newResult = formatAns(topic);
+          result = [...result, ...newResult]
+
+          if (topic.children.length !== 0) {
+            topic.children.forEach(topic => {
+              newResult = formatAns(topic);
+              result = [...result, ...newResult]
+            })
+          }
         });
       });
 
-      
       if (result === '') {
           alert("ยังไม่ได้มีการกรอกคำตอบ");
           return
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      // insertAnswer(result);
-      // genPDF(formTitle,id,user.username,user.id);
+      insertAnswer(result);
+      genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
     };
+
+  const formatAns = (topic) => {
+      const result = [];
+
+        topic.questions.forEach(question => {
+          if (Array.isArray(question.answer)) {
+            question.answer.forEach((a, instanceIndex) => {
+              if (a.answer != null) {
+                result.push([
+                  question.id,
+                  accountID,
+                  a.groupInstance,
+                  a.answer,
+                ]);
+              }
+            });
+          }
+        });
+
+      return result
+  }
 
   const handleTopicNav = (partIndex, topicIndex, direction, maxPages) => {
     const current = formData[partIndex].topics[topicIndex].topicDetail.currentIndex || 0;
