@@ -70,11 +70,13 @@ function Form() {
       }
   }
 
-  const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
-    console.log(partIndex, topicIndex, questionIndex, groupInstance, newAnswer)
+  const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, newAnswer, isChild) => {
     setFormData(prevFormData => {
       const updated = [...prevFormData];
-      const questions = [...updated[partIndex].topics[topicIndex].questions];
+      // const questions = [...updated[partIndex].topics[topicIndex].questions];
+      const questions = isChild
+        ? [...updated[partIndex].topics[topicIndex].children[childIndex].questions]
+        : [...updated[partIndex].topics[topicIndex].questions];
       const question = { ...questions[questionIndex] };
 
       const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
@@ -85,7 +87,12 @@ function Form() {
 
       question.answer = updatedAnswers;
       questions[questionIndex] = question;
-      updated[partIndex].topics[topicIndex].questions = questions;
+      // updated[partIndex].topics[topicIndex].questions = questions;
+      if (isChild) {
+        updated[partIndex].topics[topicIndex].children[childIndex].questions = questions;
+      } else {
+        updated[partIndex].topics[topicIndex].questions = questions;
+      }
       console.log(updated)
       return updated;
     });
@@ -116,6 +123,7 @@ function Form() {
                     );
 
                     if (!found) {
+                      console.log(question)
                       hasAnyAnswer = false;
                     }
                   }
@@ -182,17 +190,28 @@ function Form() {
 
   function renderAnswerInput({
     question,
-    formData,
     formDataIndex,
     topicElementIndex,
     questionIndex,
-    handleAnswerChange
+    topicElement,
+    childTopicIndex,
+    handleAnswerChange,
+    isChild
   }) {
     const currentIndex =
       formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex;
 
-    const answer =
-      formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
+    const answer = isChild
+      ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || ''
+      : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
+   
+    const onChangeHandler = (value) => {
+      if (isChild) {
+        handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, value);
+      } else {
+        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, value);
+      }
+    };
 
     if (question.type === 'listbox') {
       return (
@@ -200,10 +219,7 @@ function Form() {
           <select
             value={answer}
             className="listbox"
-            onChange={(e) => {
-              const newValue = e.target.value;
-              handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, newValue);
-            }}
+            onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, e.target.value, isChild)}
           >
             <option value="" disabled>เลือก</option>
             {question?.listboxValue?.map((item, itemIndex) => (
@@ -222,9 +238,7 @@ function Form() {
             className="input-field"
             placeholder="คำตอบของคุณ"
             value={answer}
-            onChange={(e) => {
-              handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, e.target.value);
-            }}
+            onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, e.target.value, isChild)}
           />
         </div>
       );
@@ -281,63 +295,70 @@ function Form() {
   };
 
   const renderTopicQuestions = ({
-  topicElement,
-  formData,
-  formDataIndex,
-  topicElementIndex,
-  handleAnswerChange,
-  renderAnswerInput
-}) => {
-  // multiple ans
-  return topicElement.type === "multipleAnswer" ? (
-    <div>
-      {topicElement?.questions?.map((question, questionIndex) => (
-        <div key={question.id}>
-          <div className="mb-1 mt-1">
-            {question.question}
-            {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required)) && (
-              <span style={{ color: 'red' }}> *</span>
-            )}
+    topic,
+    formDataIndex,
+    topicElementIndex,
+    childTopicIndex,
+    handleAnswerChange,
+    renderAnswerInput,
+    isChild
+  }) => {
+    const topicElement = isChild
+      ? topic?.children?.[childTopicIndex] || []
+      : topic || [];
+
+    return topicElement.type === "multipleAnswer" ? (
+      <div>
+        {topicElement?.questions?.map((question, questionIndex) => {
+          return (
+          <div key={question.id}>
+            <div className="mb-1 mt-1">
+              {question.question}
+              {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required)) && (
+                <span style={{ color: 'red' }}> *</span>
+              )}
+            </div>
+            <div className="mb-1 mt-1 example">{question.example}</div>
+
+            {renderAnswerInput({
+              question,
+              formDataIndex,
+              topicElementIndex,
+              questionIndex,
+              topicElement,
+              childTopicIndex,
+              handleAnswerChange,
+              isChild
+            })}
           </div>
-          <div className="mb-1 mt-1 example">{question.example}</div>
+        )})}
+      </div>
+    ) : (
+      // single ans
+      <div>
+        {topicElement?.questions?.map((question, questionIndex) => (
+          <div key={question.id}>
+            <div className="mb-1 mt-1">
+              {question.question}
+              {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+            </div>
+            <div className="mb-1 mt-1 example">{question.example}</div>
 
-          {renderAnswerInput({
-            question,
-            formData,
-            formDataIndex,
-            topicElementIndex,
-            questionIndex,
-            handleAnswerChange
-          })}
-        </div>
-      ))}
-    </div>
-  ) : (
-    // single ans
-    <div>
-      {topicElement?.questions?.map((question, questionIndex) => (
-        <div key={question.id}>
-          <div className="mb-1 mt-1">
-            {question.question}
-            {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+            {renderAnswerInput({
+              question,
+              formDataIndex,
+              topicElementIndex,
+              questionIndex,
+              topicElement,
+              childTopicIndex,
+              handleAnswerChange,
+              isChild
+            })}
           </div>
-          <div className="mb-1 mt-1 example">{question.example}</div>
-
-          {renderAnswerInput({
-            question,
-            formData,
-            formDataIndex,
-            topicElementIndex,
-            questionIndex,
-            handleAnswerChange
-          })}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-
+        ))}
+      </div>
+    );
+  };
 
   return (
       <div >
@@ -373,12 +394,13 @@ function Form() {
                                 <div className="mb-3 question">
                                   
                                   {renderTopicQuestions({
-                                    topicElement,
-                                    formData,
+                                    topic: topicElement,
                                     formDataIndex,
                                     topicElementIndex,
+                                    childTopicIndex: null,
                                     handleAnswerChange,
-                                    renderAnswerInput
+                                    renderAnswerInput,
+                                    isChild: false
                                   })}
 
                                 </div>
@@ -386,8 +408,25 @@ function Form() {
                                 {/* children */}
                                 {topicElement?.children.length !== 0 && (
                                     <div>
-                                      <hr className="mb-5"/>
-                                      <div>hello</div>
+                                      {topicElement.children.map((childTopic, childTopicIndex) => (
+                                          <div key={childTopic.id}>
+                                            <hr className='mb-5' />
+                                            <div className="mb-1 mt-1 topic">{childTopic.topic}</div>
+                                            <div className="mb-1 mt-1 description">{childTopic.description}</div>
+                                            <hr />
+                                            <div className="mb-3 question">
+                                              {renderTopicQuestions({
+                                                topic: topicElement,
+                                                formDataIndex,
+                                                topicElementIndex,
+                                                childTopicIndex,
+                                                handleAnswerChange,
+                                                renderAnswerInput,
+                                                isChild: true
+                                              })}
+                                            </div>
+                                          </div>
+                                        ))}
                                     </div>
                                 )}
 
@@ -396,6 +435,7 @@ function Form() {
                                   <div>
                                       {renderTopicNavigation({
                                         topicElement,
+                                        formData,
                                         formDataIndex,
                                         topicElementIndex,
                                         handleTopicNav,
