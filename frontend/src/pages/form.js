@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { useUser } from '../context/userContext.js';
 import { useFormContext } from '../context/FormContext.js';
+import DatePicker from 'react-datepicker';
 
 import '../styles/form.css';
 import '../styles/global.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'react-datepicker/dist/react-datepicker.css';
 
 import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
 
@@ -193,7 +195,7 @@ function Form() {
       genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
-    };
+  };
 
   const formatAns = (topic) => {
       const result = [];
@@ -272,7 +274,7 @@ function Form() {
           </select>
         </div>
       );
-    } else {
+    } else if ((question.type === 'inputField')) {
       return (
         <div className="mb-4">
           <input
@@ -284,6 +286,27 @@ function Form() {
           />
         </div>
       );
+    } else if ((question.type === 'date')) {
+      return (
+        <div className="mb-4 mt-2">
+          <DatePicker
+            selected={answer ? new Date(answer) : null}
+            onChange={(date) => {
+              const formatted = formatDateToISO(date);
+              handleAnswerChange(
+                formDataIndex,
+                topicElementIndex,
+                childTopicIndex,
+                questionIndex,
+                currentIndex,
+                formatted,
+                isChild
+              );
+            }}
+            dateFormat="dd/MM/yyyy"
+          />
+        </div>
+      )
     }
   }
 
@@ -407,6 +430,14 @@ function Form() {
       </div>
     );
   };
+  
+  function formatDateToISO(date) {
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`; 
+  }
 
   return (
       <div >
