@@ -73,7 +73,6 @@ function Form() {
   const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, newAnswer, isChild) => {
     setFormData(prevFormData => {
       const updated = [...prevFormData];
-      // const questions = [...updated[partIndex].topics[topicIndex].questions];
       const questions = isChild
         ? [...updated[partIndex].topics[topicIndex].children[childIndex].questions]
         : [...updated[partIndex].topics[topicIndex].questions];
@@ -87,7 +86,6 @@ function Form() {
 
       question.answer = updatedAnswers;
       questions[questionIndex] = question;
-      // updated[partIndex].topics[topicIndex].questions = questions;
       if (isChild) {
         updated[partIndex].topics[topicIndex].children[childIndex].questions = questions;
       } else {
@@ -112,6 +110,7 @@ function Form() {
   const handleSubmit = () => {
     for (const section of formData) {
       for (const topic of section.topics) {
+        console.log(topic.children)
           for (const question of topic.questions) {
             if (question.required) {
               let hasAnyAnswer = true;
@@ -136,6 +135,38 @@ function Form() {
                   alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
                   return;
                 }
+            }
+          }
+
+          if (Array.isArray(topic.children)) {
+            for (const child of topic.children) {
+              for (const question of child.questions) {
+                console.log(question)
+                if (question.required) {
+                  console.log('rewure')
+                  let hasAnyAnswer = true;
+                  if (child.type === 'multipleAnswer') {
+                    const min = topic.topicDetail?.min;
+                    for (let i = 0; i < min; i++) {
+                      const found = question.answer.find(
+                        a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                      );
+                      if (!found) {
+                        console.log(question);
+                        hasAnyAnswer = false;
+                      }
+                    }
+                  } else {
+                    hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
+                  }
+
+                  if (!hasAnyAnswer) {
+                    console.log('ข้อมูล', formData);
+                    alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
+                    return;
+                  }
+                }
+              }
             }
           }
         }
@@ -168,8 +199,8 @@ function Form() {
           return
       }
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      insertAnswer(result);
-      genPDF(formTitle,id,user.username,user.id);
+      // insertAnswer(result);
+      // genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
     };
@@ -307,6 +338,8 @@ function Form() {
       ? topic?.children?.[childTopicIndex] || []
       : topic || [];
 
+    const topicDetail = topic?.topicDetail;
+
     return topicElement.type === "multipleAnswer" ? (
       <div>
         {topicElement?.questions?.map((question, questionIndex) => {
@@ -314,7 +347,11 @@ function Form() {
           <div key={question.id}>
             <div className="mb-1 mt-1">
               {question.question}
-              {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required)) && (
+              {(
+              //   console.log(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min,
+              //   topicElement.topicDetail.currentIndex, topicElement.topicDetail.min
+              // ) &&
+                topicDetail.currentIndex < topicDetail.min && Boolean(question.required)) && (
                 <span style={{ color: 'red' }}> *</span>
               )}
             </div>
@@ -410,7 +447,7 @@ function Form() {
                                     <div>
                                       {topicElement.children.map((childTopic, childTopicIndex) => (
                                           <div key={childTopic.id}>
-                                            <hr className='mb-5' />
+                                            <hr className='mb-5 mt-5' />
                                             <div className="mb-1 mt-1 topic">{childTopic.topic}</div>
                                             <div className="mb-1 mt-1 description">{childTopic.description}</div>
                                             <hr />
