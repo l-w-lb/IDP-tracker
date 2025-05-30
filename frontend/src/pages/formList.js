@@ -54,7 +54,8 @@ function FormList() {
                               to={`/form/${list.title}`} 
                               className="form-link ellipsis"
                               title={`${list.title}`}
-                              onClick={() => setForm({formID: list.formID, partID: list.partID})} 
+                              onClick={() => setForm({formID: list.formID, partID: list.partID, part:list.part})} 
+                              // onClick={() => setForm({formID: list.formID, partID: list.partID})} 
                             >
                                 {list.title}
                             </Link>

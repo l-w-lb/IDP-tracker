@@ -14,7 +14,7 @@ const getFormTitleDescription = (req, res) => {
 };
 
 const getPartTopicQuestion = (req, res) => {
-  const { userID, formID } = req.body;
+  const { userID, formID, partID } = req.body;
   const sql = `SELECT 
         topic.partID, 
         part.text AS part, 
@@ -44,6 +44,7 @@ const getPartTopicQuestion = (req, res) => {
         ON question.id = useranswer.questionID
         AND useranswer.accountID = ?
       WHERE form.id = ?
+        AND part.id <= ?
       ORDER BY 
         topic.partID ASC,
         topic.id ASC,
@@ -52,7 +53,7 @@ const getPartTopicQuestion = (req, res) => {
 
   `;
 
-  db.query(sql, [userID, formID], (err, result) => {
+  db.query(sql, [userID, formID, partID], (err, result) => {
     // console.log(res)
     if (err) throw err;
     res.json(result);
