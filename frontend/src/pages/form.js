@@ -12,7 +12,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF } from '../services/formServices.js';
 
 function Form() {
   const { user } = useUser();
@@ -249,13 +249,13 @@ function Form() {
       ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || ''
       : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
    
-    const onChangeHandler = (value) => {
-      if (isChild) {
-        handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, value);
-      } else {
-        handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, value);
-      }
-    };
+    // const onChangeHandler = (value) => {
+    //   if (isChild) {
+    //     handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, value);
+    //   } else {
+    //     handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, value);
+    //   }
+    // };
 
     if (question.type === 'listbox') {
       return (
@@ -304,6 +304,30 @@ function Form() {
               );
             }}
             dateFormat="dd/MM/yyyy"
+          />
+        </div>
+      )
+    } else if ((question.type === 'file')) {
+      return (
+        <div className="mb-4 mt-1">
+          <label htmlFor="pdfUpload" className="form-label">แนบไฟล์ PDF</label>
+          <input
+            type="file"
+            className="form-control file"
+            id="pdfUpload"
+            accept=".pdf"
+            onChange={(e) => 
+              handlePdfUpload(
+                formDataIndex,
+                topicElementIndex,
+                childTopicIndex,
+                questionIndex,
+                currentIndex,
+                e.target.files[0],
+                isChild,
+                formTitle
+              )
+            }
           />
         </div>
       )
@@ -438,6 +462,24 @@ function Form() {
     const dd = String(d.getDate()).padStart(2, '0');
     return `${yyyy}-${mm}-${dd}`; 
   }
+
+  const handlePdfUpload = async (partIndex, topicIndex, childIndex, questionIndex, groupInstance, newAnswer, isChild, formTitle) => {
+    const time = Date.now();
+    const fileName = `${formTitle}_${time}.pdf`;
+    const fileUrl = `/uploads/answers/${fileName}`;
+    handleAnswerChange(partIndex, topicIndex, childIndex, questionIndex, groupInstance, fileUrl, isChild);
+
+    const file = newAnswer;
+    if (file) {
+      console.log('PDF ที่เลือก:', file);
+      try {
+        const uploasdPDF = await uploadPDF(formTitle, file, time);
+      } catch (err) {
+        console.error('fail to generates PDF:', err.message);
+      }
+    }
+  };
+
 
   return (
       <div >

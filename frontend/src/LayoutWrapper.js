@@ -36,6 +36,7 @@ function LayoutWrapper() {
           }
   
         } catch (err) {
+          navigate('/')
           console.error('Session error:', err);
         }
       };

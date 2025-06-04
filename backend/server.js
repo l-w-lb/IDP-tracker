@@ -38,6 +38,8 @@ app.use('/api/form', formRoutes);
 app.use('/api/formList', formListRoutes); 
 app.use('/api/approvalList', approvalListRoutes); 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.post('/api/upload-pdf', upload.single('pdf'), uploadPDF);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

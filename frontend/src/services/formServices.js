@@ -135,3 +135,16 @@ export const generatePDF = async (formTitle, formID, username, userID) => {
         console.error('fail to generate PDF:', err.message);
       }
 }
+
+export const uploadPDF = async (formTitle, file, time) => {
+      try {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('formTitle', formTitle);
+        formData.append('time', time);
+        console.log(formTitle)
+        const res = await axios.post(`${formRoutes}/upload-pdf`, formData)
+      } catch (err) {
+        console.error('fail to generate PDF:', err.message);
+      }
+}
