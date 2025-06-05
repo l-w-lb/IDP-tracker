@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/userContext.js';
 import { useFormContext } from '../context/FormContext.js';
 import DatePicker from 'react-datepicker';
+import { BASE_URL } from '../config.js';
 
 import '../styles/form.css';
 import '../styles/global.css';
@@ -531,7 +532,7 @@ function Form() {
 
           <div className='mt-3'>
             {question.answer.map((answer, index) => {
-                return answer.answer !== '' && (
+                return answer.answer !== '' && answer.groupInstance === topicDetail.currentIndex && (
                   <div key={index}>
                     {/* show file name */}
                     <span style={{ cursor: 'pointer' }} onClick={() => handleShowFileData(formDataIndex, topicElementIndex, childTopicIndex, index, isChild)}>
@@ -542,10 +543,12 @@ function Form() {
                       <span>{answer.answer.split('/').pop().replace(/^\d+_/, '')}</span>
 
                       <span
-                        className='btn-prewiew'
+                        className="btn-preview"
                         onClick={(e) => {
-                          e.stopPropagation(); 
-                          // handleDeleteFile(formDataIndex, topicElementIndex, childTopicIndex, answer.groupInstance, answer.subInstance, isChild);
+                          e.stopPropagation();
+                          const pdfUrl = BASE_URL + answer.answer;
+                          console.log(pdfUrl)
+                          window.open(pdfUrl, '_blank');
                         }}
                       >
                         preview
