@@ -3,14 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { useUser } from '../context/userContext.js';
 import { useFormContext } from '../context/FormContext.js';
+import DatePicker from 'react-datepicker';
 
 import '../styles/form.css';
 import '../styles/global.css';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import 'react-datepicker/dist/react-datepicker.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF } from '../services/formServices.js';
 
 function Form() {
   const { user } = useUser();
@@ -70,11 +72,12 @@ function Form() {
       }
   }
 
-  const handleAnswerChange = (partIndex, topicIndex, questionIndex, groupInstance, newAnswer) => {
-    console.log(partIndex, topicIndex, questionIndex, groupInstance, newAnswer)
+  const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, newAnswer, isChild) => {
     setFormData(prevFormData => {
       const updated = [...prevFormData];
-      const questions = [...updated[partIndex].topics[topicIndex].questions];
+      const questions = isChild
+        ? [...updated[partIndex].topics[topicIndex].children[childIndex].questions]
+        : [...updated[partIndex].topics[topicIndex].questions];
       const question = { ...questions[questionIndex] };
 
       const updatedAnswers = question.answer.some(a => a.groupInstance === groupInstance)
@@ -85,7 +88,11 @@ function Form() {
 
       question.answer = updatedAnswers;
       questions[questionIndex] = question;
-      updated[partIndex].topics[topicIndex].questions = questions;
+      if (isChild) {
+        updated[partIndex].topics[topicIndex].children[childIndex].questions = questions;
+      } else {
+        updated[partIndex].topics[topicIndex].questions = questions;
+      }
       console.log(updated)
       return updated;
     });
@@ -116,6 +123,7 @@ function Form() {
                     );
 
                     if (!found) {
+                      console.log(question)
                       hasAnyAnswer = false;
                     }
                   }
@@ -130,31 +138,54 @@ function Form() {
                 }
             }
           }
+
+          if (Array.isArray(topic.children)) {
+            for (const child of topic.children) {
+              for (const question of child.questions) {
+                if (question.required) {
+                  let hasAnyAnswer = true;
+                  if (child.type === 'multipleAnswer') {
+                    const min = topic.topicDetail?.min;
+                    for (let i = 0; i < min; i++) {
+                      const found = question.answer.find(
+                        a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                      );
+                      if (!found) {
+                        hasAnyAnswer = false;
+                      }
+                    }
+                  } else {
+                    hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
+                  }
+
+                  if (!hasAnyAnswer) {
+                    console.log('ข้อมูล', formData);
+                    alert("กรุณากรอกทุกคำถามที่จำเป็นต้องตอบ");
+                    return;
+                  }
+                }
+              }
+            }
+          }
         }
       }
 
-      const result = [];
+      let result = [];
 
       formData.forEach(part => {
         part.topics.forEach(topic => {
-          topic.questions.forEach(question => {
-            if (Array.isArray(question.answer)) {
-              question.answer.forEach((a, instanceIndex) => {
-                if (a.answer != null) {
-                  result.push([
-                    question.id,
-                    accountID,
-                    a.groupInstance,
-                    a.answer,
-                  ]);
-                }
-              });
-            }
-          });
+          let newResult = formatAns(topic);
+          result = [...result, ...newResult]
+
+          if (topic.children.length !== 0) {
+            topic.children.forEach(topic => {
+              newResult = formatAns(topic);
+              result = [...result, ...newResult]
+            })
+          }
         });
       });
 
-      
       if (result === '') {
           alert("ยังไม่ได้มีการกรอกคำตอบ");
           return
@@ -164,7 +195,28 @@ function Form() {
       genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
-    };
+  };
+
+  const formatAns = (topic) => {
+      const result = [];
+
+        topic.questions.forEach(question => {
+          if (Array.isArray(question.answer)) {
+            question.answer.forEach((a, instanceIndex) => {
+              if (a.answer != null) {
+                result.push([
+                  question.id,
+                  accountID,
+                  a.groupInstance,
+                  a.answer,
+                ]);
+              }
+            });
+          }
+        });
+
+      return result
+  }
 
   const handleTopicNav = (partIndex, topicIndex, direction, maxPages) => {
     const current = formData[partIndex].topics[topicIndex].topicDetail.currentIndex || 0;
@@ -182,28 +234,36 @@ function Form() {
 
   function renderAnswerInput({
     question,
-    formData,
     formDataIndex,
     topicElementIndex,
     questionIndex,
-    handleAnswerChange
+    topicElement,
+    childTopicIndex,
+    handleAnswerChange,
+    isChild
   }) {
     const currentIndex =
       formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex;
 
-    const answer =
-      formData[formDataIndex]?.topics[topicElementIndex]?.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
-    console.log(formData)
+    const answer = isChild
+      ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || ''
+      : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
+   
+    // const onChangeHandler = (value) => {
+    //   if (isChild) {
+    //     handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, value);
+    //   } else {
+    //     handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, value);
+    //   }
+    // };
+
     if (question.type === 'listbox') {
       return (
         <div className="mb-4 mt-2">
           <select
             value={answer}
             className="listbox"
-            onChange={(e) => {
-              const newValue = e.target.value;
-              handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, newValue);
-            }}
+            onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, e.target.value, isChild)}
           >
             <option value="" disabled>เลือก</option>
             {question?.listboxValue?.map((item, itemIndex) => (
@@ -214,7 +274,7 @@ function Form() {
           </select>
         </div>
       );
-    } else {
+    } else if ((question.type === 'inputField')) {
       return (
         <div className="mb-4">
           <input
@@ -222,12 +282,55 @@ function Form() {
             className="input-field"
             placeholder="คำตอบของคุณ"
             value={answer}
-            onChange={(e) => {
-              handleAnswerChange(formDataIndex, topicElementIndex, questionIndex, currentIndex, e.target.value);
-            }}
+            onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, e.target.value, isChild)}
           />
         </div>
       );
+    } else if ((question.type === 'date')) {
+      return (
+        <div className="mb-4 mt-2">
+          <DatePicker
+            selected={answer ? new Date(answer) : null}
+            onChange={(date) => {
+              const formatted = formatDateToISO(date);
+              handleAnswerChange(
+                formDataIndex,
+                topicElementIndex,
+                childTopicIndex,
+                questionIndex,
+                currentIndex,
+                formatted,
+                isChild
+              );
+            }}
+            dateFormat="dd/MM/yyyy"
+          />
+        </div>
+      )
+    } else if ((question.type === 'file')) {
+      return (
+        <div className="mb-4 mt-1">
+          <label htmlFor="pdfUpload" className="form-label">แนบไฟล์ PDF</label>
+          <input
+            type="file"
+            className="form-control file"
+            id="pdfUpload"
+            accept=".pdf"
+            onChange={(e) => 
+              handlePdfUpload(
+                formDataIndex,
+                topicElementIndex,
+                childTopicIndex,
+                questionIndex,
+                currentIndex,
+                e.target.files[0],
+                isChild,
+                formTitle
+              )
+            }
+          />
+        </div>
+      )
     }
   }
 
@@ -281,25 +384,32 @@ function Form() {
   };
 
   const renderTopicQuestions = ({
-    topicElement,
-    formData,
+    topic,
     formDataIndex,
     topicElementIndex,
+    childTopicIndex,
     handleAnswerChange,
-    renderAnswerInput
+    renderAnswerInput,
+    isChild
   }) => {
-    // console.log(topicElement,
-    // formData,
-    // formDataIndex,
-    // topicElementIndex)
-    // multiple ans
+    const topicElement = isChild
+      ? topic?.children?.[childTopicIndex] || []
+      : topic || [];
+
+    const topicDetail = topic?.topicDetail;
+
     return topicElement.type === "multipleAnswer" ? (
       <div>
-        {topicElement?.questions?.map((question, questionIndex) => (
+        {topicElement?.questions?.map((question, questionIndex) => {
+          return (
           <div key={question.id}>
             <div className="mb-1 mt-1">
               {question.question}
-              {(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min && Boolean(question.required)) && (
+              {(
+              //   console.log(topicElement.topicDetail.currentIndex < topicElement.topicDetail.min,
+              //   topicElement.topicDetail.currentIndex, topicElement.topicDetail.min
+              // ) &&
+                topicDetail.currentIndex < topicDetail.min && Boolean(question.required)) && (
                 <span style={{ color: 'red' }}> *</span>
               )}
             </div>
@@ -307,14 +417,16 @@ function Form() {
 
             {renderAnswerInput({
               question,
-              formData,
               formDataIndex,
               topicElementIndex,
               questionIndex,
-              handleAnswerChange
+              topicElement,
+              childTopicIndex,
+              handleAnswerChange,
+              isChild
             })}
           </div>
-        ))}
+        )})}
       </div>
     ) : (
       // single ans
@@ -329,18 +441,44 @@ function Form() {
 
             {renderAnswerInput({
               question,
-              formData,
               formDataIndex,
               topicElementIndex,
               questionIndex,
-              handleAnswerChange
+              topicElement,
+              childTopicIndex,
+              handleAnswerChange,
+              isChild
             })}
           </div>
         ))}
       </div>
     );
   };
+  
+  function formatDateToISO(date) {
+    const d = new Date(date);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`; 
+  }
 
+  const handlePdfUpload = async (partIndex, topicIndex, childIndex, questionIndex, groupInstance, newAnswer, isChild, formTitle) => {
+    const time = Date.now();
+    const fileName = `${formTitle}_${time}.pdf`;
+    const fileUrl = `/uploads/answers/${fileName}`;
+    handleAnswerChange(partIndex, topicIndex, childIndex, questionIndex, groupInstance, fileUrl, isChild);
+
+    const file = newAnswer;
+    if (file) {
+      console.log('PDF ที่เลือก:', file);
+      try {
+        const uploasdPDF = await uploadPDF(formTitle, file, time);
+      } catch (err) {
+        console.error('fail to generates PDF:', err.message);
+      }
+    }
+  };
 
 
   return (
@@ -377,12 +515,13 @@ function Form() {
                                 <div className="mb-3 question">
                                   
                                   {renderTopicQuestions({
-                                    topicElement,
-                                    formData,
+                                    topic: topicElement,
                                     formDataIndex,
                                     topicElementIndex,
+                                    childTopicIndex: null,
                                     handleAnswerChange,
-                                    renderAnswerInput
+                                    renderAnswerInput,
+                                    isChild: false
                                   })}
 
                                 </div>
@@ -392,18 +531,19 @@ function Form() {
                                     <div>
                                       {topicElement.children.map((childTopic, childTopicIndex) => (
                                           <div key={childTopic.id}>
-                                            <hr className='mb-5' />
+                                            <hr className='mb-5 mt-5' />
                                             <div className="mb-1 mt-1 topic">{childTopic.topic}</div>
                                             <div className="mb-1 mt-1 description">{childTopic.description}</div>
                                             <hr />
                                             <div className="mb-3 question">
                                               {renderTopicQuestions({
-                                                topicElement: childTopic,
-                                                formData: topicElement,
-                                                formDataIndex: topicElementIndex,
-                                                topicElementIndex: childTopicIndex,
+                                                topic: topicElement,
+                                                formDataIndex,
+                                                topicElementIndex,
+                                                childTopicIndex,
                                                 handleAnswerChange,
-                                                renderAnswerInput
+                                                renderAnswerInput,
+                                                isChild: true
                                               })}
                                             </div>
                                           </div>

@@ -11,7 +11,7 @@ export const fetchTitleDescription = async (id) => {
         }
     };
 
-function appendTopicToPart(topics, item) {
+function appendTopicToPart(topics, item, currentIndex) {
   let topic = topics.find(t => t.id === item.topicID);
 
   if (!topic) {
@@ -23,7 +23,7 @@ function appendTopicToPart(topics, item) {
       topicDetail: {
         ...item.typeDetail,
         add: 0,
-        currentIndex: 0
+        currentIndex: currentIndex
       },
       children: [],
       questions: []
@@ -73,7 +73,8 @@ function appendQuestionToTopic(topic, item) {
       question.answer.push({
         id: item.answerID,
         answer: item.userAnswer,
-        groupInstance: item.groupInstance
+        groupInstance: item.groupInstance,
+        subInstance: item.subInstance
       });
     }
   }
@@ -105,9 +106,9 @@ export const fetchformData = async (id, userID, partID) => {
             .flatMap(part => part.topics)
                 .find(t => t.id === item.typeDetail?.inherit);
             
-            appendTopicToPart(inheritedTopic.children, item);
+            appendTopicToPart(inheritedTopic.children, item, item.topicType === 'multipleFile' ? null : 0);
           } else {
-            appendTopicToPart(currentPart.topics, item);
+            appendTopicToPart(currentPart.topics, item, 0);
             }
         });
         return Object.values(partMap);
@@ -136,13 +137,12 @@ export const generatePDF = async (formTitle, formID, username, userID) => {
       }
 }
 
-export const uploadPDF = async (formTitle, file, time) => {
+export const uploadPDF = async (fileName, file, time) => {
       try {
         const formData = new FormData();
         formData.append('pdf', file);
-        formData.append('formTitle', formTitle);
+        formData.append('fileName', fileName);
         formData.append('time', time);
-        console.log(formTitle)
         const res = await axios.post(`${formRoutes}/upload-pdf`, formData)
       } catch (err) {
         console.error('fail to generate PDF:', err.message);

@@ -49,7 +49,7 @@ const genPDF = (req, res) => {
 };
 
 const uploadPDF = (req, res) => {
-  const { formTitle, time } = req.body;
+  const { fileName, time } = req.body;
   const file = req.file;
   if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
@@ -57,15 +57,12 @@ const uploadPDF = (req, res) => {
 
   const oldPath = file.path;
   const ext = path.extname(file.originalname);
-  const newFilename = `${formTitle}_${time}${ext}`;
-  const newPath = path.join(file.destination, newFilename);
-
+  const newPath = path.join(file.destination, fileName.split('/').pop());
   fs.rename(oldPath, newPath, (err) => {
     if (err) return res.status(500).json({ error: 'Rename failed' });
-
-    const fileUrl = `/uploads/answers/${newFilename}`;
-    console.log('📄 PDF saved at:', fileUrl);
-    res.json({ message: 'PDF uploaded successfully', fileUrl });
+    
+    console.log('📄 PDF saved at:', fileName);
+    res.json({ message: 'PDF uploaded successfully', fileName });
   });
 };
 

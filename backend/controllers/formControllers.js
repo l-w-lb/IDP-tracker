@@ -32,6 +32,7 @@ const getPartTopicQuestion = (req, res) => {
         topic.typeDetail, 
         useranswer.text AS userAnswer,
         useranswer.groupInstance,
+        useranswer.subInstance,
         useranswer.id AS answerID
       FROM question
       JOIN topic ON topic.id = question.topicID
@@ -62,7 +63,7 @@ const getPartTopicQuestion = (req, res) => {
 
 const insertUserAnswer = (req, res) => {
   const value = req.body.value;
-  const sql = `INSERT INTO useranswer (questionID, accountID, groupInstance, text)
+  const sql = `INSERT INTO useranswer (questionID, accountID, groupInstance, subInstance, text)
       VALUES ?
       ON DUPLICATE KEY UPDATE
         text = VALUES(text);
@@ -77,7 +78,8 @@ const insertUserAnswer = (req, res) => {
 const getUserAnswer = (req, res) => {
   const formID = req.body.formID;
   const accountID = req.body.accountID;
-  const sql = `SELECT useranswer.text, useranswer.questionID, useranswer.groupInstance 
+  const sql = `SELECT useranswer.text, useranswer.questionID, useranswer.groupInstance, 
+  useranswer.subInstance
       FROM useranswer
       JOIN question ON question.id = useranswer.questionID
       JOIN topic ON topic.id = question.topicID
