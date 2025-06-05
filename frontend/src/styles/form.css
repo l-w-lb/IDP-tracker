@@ -55,6 +55,27 @@ body {
     background-size: 12px;
 } */
 
+.date {
+    border: none;
+    border-bottom: 2px solid #636363; 
+    outline: none; 
+    padding: 8px 4px;
+    font-size: 16px;
+    /* width: 40%;
+    max-width: 40%; */
+}
+
+.listbox {
+  border: none;
+  border-bottom: 2px solid #636363; 
+  outline: none; 
+  padding: 8px 4px;
+  font-size: 16px;
+  width: 40%;
+  max-width: 40%;
+  border-radius: 0;
+}
+
 
 .input-field {
     border: none;
@@ -67,7 +88,7 @@ body {
 }
 
 
-.input-field:focus {
+.input-field:focus, .listbox:focus, .date:focus {
   border-bottom: 2px solid #28a745; 
 }
 
@@ -139,9 +160,6 @@ body {
   cursor: pointer;
 }
 
-/* .listbox:focus {
-  outline: 2px solid hsl(152, 77%, 65%);
-} */
 
 
 

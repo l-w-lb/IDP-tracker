@@ -341,6 +341,8 @@ function Form() {
       return (
         <div className="mb-4 mt-2">
           <DatePicker
+            placeholderText='คำตอบของคุณ'
+            className='date'
             selected={answer ? new Date(answer) : null}
             onChange={(date) => {
               const formatted = formatDateToISO(date);
@@ -383,7 +385,20 @@ function Form() {
           />
         </div>
       )
-    }
+    } 
+    // else if ((question.type === 'time')) {
+    //   return (
+    //     <div className="mb-4">
+    //       <input
+    //         type="text"
+    //         className="input-field"
+    //         placeholder="คำตอบของคุณ"
+    //         value={answer}
+    //         onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, subCurrentIndex, e.target.value, isChild)}
+    //       />
+    //     </div>
+    //   )
+    // }
   }
 
   const renderTopicNavigation = ({
