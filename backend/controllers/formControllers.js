@@ -24,10 +24,11 @@ const getPartTopicQuestion = (req, res) => {
         question.text AS question,
         question.topicID, 
         question.id AS questionID, 
+        question.questionDetail,
         topic.description AS topicDescription,
         answertype.type, 
-        listbox.text AS listboxText, 
-        listbox.id AS listboxID,
+        choice.text AS choiceText, 
+        choice.id AS choiceID,
         topictype.type AS topicType, 
         topic.typeDetail, 
         useranswer.text AS userAnswer,
@@ -40,7 +41,7 @@ const getPartTopicQuestion = (req, res) => {
       JOIN form ON form.id = part.formID
       JOIN answertype ON answertype.id = question.answerTypeID
       JOIN topictype ON topictype.id = topic.topicTypeID
-      LEFT JOIN listbox ON question.id = listbox.questionID
+      LEFT JOIN choice ON question.id = choice.questionID
       LEFT JOIN useranswer 
         ON question.id = useranswer.questionID
         AND useranswer.accountID = ?
@@ -50,7 +51,7 @@ const getPartTopicQuestion = (req, res) => {
         topic.partID ASC,
         topic.id ASC,
         question.id ASC,
-        listbox.id ASC;
+        choice.id ASC;
 
   `;
 

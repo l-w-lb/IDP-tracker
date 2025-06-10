@@ -24,12 +24,18 @@ body {
     font-weight: bold;
 }
 
-.example, .description, .multiple-ans-index {
+.example, .description, .multiple-ans-index, .show-sum {
     font-size: 16px;
     color: #9d9d9d;
 }
 
-.question {
+.show-sum {
+    font-size: 16px;
+    color: rgb(51, 0, 255);
+    margin-left: 12px;
+}
+
+.question, .radio-btn {
     font-size: 20px;
 }
 
@@ -64,6 +70,14 @@ body {
     /* width: 40%;
     max-width: 40%; */
 }
+
+/* .react-datepicker-wrapper,
+.react-datepicker__input-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+} */
+
 
 .listbox {
   border: none;

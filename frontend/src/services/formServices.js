@@ -51,18 +51,19 @@ function appendQuestionToTopic(topic, item) {
       example: item.EXAMPLE,
       required: item.required,
       type: item.type,
+      questionDetail: item.questionDetail,
       answer: [],
-      listboxValue: []
+      choiceValue: []
     };
     topic.questions.push(question);
   }
 
-  if (item.type === "listbox" && item.listboxText) {
-    const isDuplicateListbox = question.listboxValue.some(v => v.id === item.listboxID);
-    if (!isDuplicateListbox) {
-      question.listboxValue.push({
-        id: item.listboxID,
-        listbox: item.listboxText
+  if ((item.type === "listbox" || item.type === "radioButton" || item.type === "appendAns") && item.choiceText) {
+    const isDuplicatechoice = question.choiceValue.some(v => v.id === item.choiceID);
+    if (!isDuplicatechoice) {
+      question.choiceValue.push({
+        id: item.choiceID,
+        choice: item.choiceText
       });
     }
   }
@@ -70,12 +71,23 @@ function appendQuestionToTopic(topic, item) {
   if (item.userAnswer) {
     const isDuplicateAnswer = question.answer.some(v => v.id === item.answerID);
     if (!isDuplicateAnswer) {
-      question.answer.push({
-        id: item.answerID,
-        answer: item.userAnswer,
-        groupInstance: item.groupInstance,
-        subInstance: item.subInstance
-      });
+      // if (item.type !== 'time') {
+        question.answer.push({
+          id: item.answerID,
+          answer: item.userAnswer,
+          groupInstance: item.groupInstance,
+          subInstance: item.subInstance
+        });
+      // } 
+      // else {
+      //   const time = item.userAnswer.split(':');
+      //   question.answer.push({
+      //     id: item.answerID,
+      //     answer: {hr: time[0], min: time[1], sec: time[2]},
+      //     groupInstance: item.groupInstance,
+      //     subInstance: item.subInstance
+      //   });
+      // }
     }
   }
 }
