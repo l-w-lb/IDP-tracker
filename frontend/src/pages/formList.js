@@ -45,6 +45,7 @@ function FormList() {
                     </tr>
                 </thead>
                 {formList.map((list, index) => {
+                  console.log(list)
                   return (
                     <tbody key={index}>
                         <tr>
@@ -53,11 +54,10 @@ function FormList() {
                             <Link 
                               to={`/form/${list.title}`} 
                               className="form-link ellipsis"
-                              title={`${list.title}`}
+                              title={list.part ? `${list.title}/${list.part}` : list.title}
                               onClick={() => setForm({formID: list.formID, partID: list.partID, part:list.part})} 
-                              // onClick={() => setForm({formID: list.formID, partID: list.partID})} 
                             >
-                                {list.title}
+                                {list.part ? `${list.title}/${list.part}` : list.title}
                             </Link>
                         </td>
                         <td>{list.status ? list.status : '-'}</td>
