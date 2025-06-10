@@ -45,7 +45,6 @@ function FormList() {
                     </tr>
                 </thead>
                 {formList.map((list, index) => {
-                  console.log(list)
                   return (
                     <tbody key={index}>
                         <tr>

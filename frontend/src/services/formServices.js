@@ -58,7 +58,7 @@ function appendQuestionToTopic(topic, item) {
     topic.questions.push(question);
   }
 
-  if ((item.type === "listbox" || item.type === "radioButton" || item.type === "appendAns") && item.choiceText) {
+  if ((item.type === "listbox" ) && item.choiceText) {
     const isDuplicatechoice = question.choiceValue.some(v => v.id === item.choiceID);
     if (!isDuplicatechoice) {
       question.choiceValue.push({
@@ -71,23 +71,12 @@ function appendQuestionToTopic(topic, item) {
   if (item.userAnswer) {
     const isDuplicateAnswer = question.answer.some(v => v.id === item.answerID);
     if (!isDuplicateAnswer) {
-      // if (item.type !== 'time') {
         question.answer.push({
           id: item.answerID,
           answer: item.userAnswer,
           groupInstance: item.groupInstance,
           subInstance: item.subInstance
         });
-      // } 
-      // else {
-      //   const time = item.userAnswer.split(':');
-      //   question.answer.push({
-      //     id: item.answerID,
-      //     answer: {hr: time[0], min: time[1], sec: time[2]},
-      //     groupInstance: item.groupInstance,
-      //     subInstance: item.subInstance
-      //   });
-      // }
     }
   }
 }
@@ -119,6 +108,15 @@ export const fetchformData = async (id, userID, partID) => {
                 .find(t => t.id === item.typeDetail?.inherit);
             
             appendTopicToPart(inheritedTopic.children, item, item.topicType === 'multipleFile' ? null : 0);
+
+            if (inheritedTopic.type === 'dynamicQuestion') {
+              inheritedTopic.topicDetail.add = Math.max(
+                inheritedTopic.topicDetail.add || 0,
+                (item.groupInstance ?? 0) + 1,
+                inheritedTopic.topicDetail.min
+              ) || 1;
+            }
+            
           } else {
             appendTopicToPart(currentPart.topics, item, 0);
             }

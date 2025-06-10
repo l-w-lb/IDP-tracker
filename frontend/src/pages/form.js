@@ -29,10 +29,6 @@ function Form() {
   const [formDescription, setFormDescription] = useState('');
   const [formData, setFormData] = useState([]);
 
-  // mockup data
-  // let id = 1; //formID
-  // let accountID = 3;
-
   useEffect(() => {
     if (!user || !user.id) return; 
 
@@ -74,6 +70,7 @@ function Form() {
   }
 
   const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild) => {
+    console.log(partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild)
     setFormData(prevFormData => {
       const updated = [...prevFormData];
       const questions = isChild
@@ -135,10 +132,58 @@ function Form() {
     const min = isChild
       ? formData[partIndex]?.topics[topicIndex]?.children[childIndex]?.topicDetail?.min
       : formData[partIndex]?.topics[topicIndex]?.topicDetail?.min || 1;
-    currentValue = Math.max(currentValue + action, min);
+    let currentIndex = isChild 
+      ? formData[partIndex]?.topics[topicIndex]?.children[childIndex]?.topicDetail?.currentIndex
+      : formData[partIndex]?.topics[topicIndex]?.topicDetail?.currentIndex || 0;
+    currentValue = currentValue + action;
+    if (currentIndex + 1 >= currentValue) {
+      currentIndex = currentIndex - 1;
+    }
+
+    if (action === -1) {
+      console.log(formData[partIndex].topics[topicIndex].children)
+      formData[partIndex].topics[topicIndex].questions.map((question, questionIndex) => {
+        question.answer.map((answer, answerIndex) => {
+          if (answer.groupInstance > currentValue - 1) {
+            handleAnswerChange(
+              partIndex, 
+              topicIndex,
+              childIndex,
+              questionIndex,
+              answer.groupInstance,
+              answer.subInstance,
+              '',
+              false
+            )
+          }
+        })
+      })
+
+      formData[partIndex].topics[topicIndex].children.map((childTopic, childTopicIndex) => {
+        childTopic.questions.map((question, questionIndex) => {
+          question.answer.map((answer, answerIndex) => {
+            if (answer.groupInstance > currentValue - 1) {
+              console.log(answer)
+              handleAnswerChange(
+                partIndex, 
+                topicIndex,
+                childTopicIndex,
+                questionIndex,
+                answer.groupInstance,
+                answer.subInstance,
+                '',
+                true
+              )
+            }
+          })
+        })
+      })
+    }
+
     setFormData(prevFormData => {
         const updatedFormData = [...prevFormData];
           updatedFormData[partIndex].topics[topicIndex].topicDetail.add = currentValue;
+          updatedFormData[partIndex].topics[topicIndex].topicDetail.currentIndex = currentIndex;
         return updatedFormData;
     })
   };
@@ -191,7 +236,7 @@ function Form() {
           for (const question of topic.questions) {
             if (question.required) {
               let hasAnyAnswer = true;
-              if (topic.type === 'multipleAnswer') {
+              if (topic.type === 'multipleAnswer' || topic.type === 'dynamicQuestion') {
                   const min = topic.topicDetail?.min;
                   for (let i = 0; i < min; i++) {
                     const found = question.answer.find(
@@ -219,7 +264,7 @@ function Form() {
               for (const question of child.questions) {
                 if (question.required) {
                   let hasAnyAnswer = true;
-                  if (child.type === 'multipleAnswer') {
+                  if (child.type === 'multipleAnswer' || child.type === 'dynamicQuestion') {
                     const min = topic.topicDetail?.min;
                     for (let i = 0; i < min; i++) {
                       const found = question.answer.find(
@@ -308,56 +353,6 @@ function Form() {
   //   console.log(formData)
   // },[formData])
 
-  const handleAppendAns = (
-      partIndex,
-      topicIndex,
-      childIndex,
-      questionIndex,
-      groupInstance,
-      newValue,
-      isChild
-    ) => {
-      const answers = isChild 
-        ? formData[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer
-        : formData[partIndex].topics[topicIndex].questions[questionIndex].answer
-
-      handleAnswerChange(
-        partIndex,
-        topicIndex,
-        childIndex,
-        questionIndex,
-        answers.length,
-        0,
-        newValue,
-        isChild
-      );
-  }
-
-  const handleDeleteAns = (partIndex, topicIndex, childIndex, groupInstance, subInstance, isChild) => {
-    console.log(formData[partIndex].topics[topicIndex].questions)
-    setFormData(prevData => {
-      const updated = [...prevData];
-      const questions = isChild 
-        ? formData[partIndex].topics[topicIndex].children[childIndex].questions
-        : formData[partIndex].topics[topicIndex].questions;
-
-      questions.map((question, questionIndex) => {
-        question.answer.map((ans, ansIndex) => {
-          console.log(ans.answer, ansIndex, ans.groupInstance, ans.subInstance)
-          if (ans.groupInstance === groupInstance && ans.subInstance === subInstance) {
-            console.log(ansIndex)
-            if (isChild) {
-              updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer.splice(ansIndex,1);
-            } else {
-              updated[partIndex].topics[topicIndex].questions[questionIndex].answer.splice(ansIndex,1);
-            }
-          }
-        })
-      })
-
-      return updated;
-    })
-  };
 
   function renderAnswerInput({
     question,
@@ -371,15 +366,32 @@ function Form() {
     isChild
   }) {
     const currentIndex =
-      formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex;
+        formData[formDataIndex]?.topics[topicElementIndex]?.topicDetail.currentIndex;
 
     const currentSubIndex =
       formData[formDataIndex]?.topics[topicElementIndex]?.children[childTopicIndex]?.topicDetail.currentIndex;
+    // console.log(formData[formDataIndex]?.topics[topicElementIndex]?.topic, formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion')
+    // const answerIndex = 
+    //   formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion'
+    //     ? currentIndex
+    //     : currentIndex
 
-    const answer = isChild
-      ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
-        (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
-      : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
+    const answer = 
+      formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion'
+        ? isChild
+          ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
+            (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
+          : topicElement.questions[0]?.answer[0].answer || ''
+        : isChild
+          ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
+            (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
+          : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
+
+
+    // const answer = isChild
+    //   ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
+    //     (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
+    //   : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
 
       if (question.type === 'listbox') {
       return (
@@ -515,7 +527,7 @@ function Form() {
           />
         </div>
       )
-    } else if ((question.type === 'radioButton')) {
+    } else if ((question.type === 'dynamicQuestion')) {
       return (
         <div className="mt-2">
           {question?.choiceValue?.map((choice, index) => {
@@ -525,16 +537,16 @@ function Form() {
                   className=" form-check-input mb-3"
                   type="radio"
                   name={`radio-${question.id}`}
-                  value={choice.choice}
-                  checked={answer === choice.choice}
+                  value={choice.id}
+                  checked={String(answer) === String(choice.id)}
                   onChange={(e) =>
                     handleAnswerChange(
                       formDataIndex,
                       topicElementIndex,
                       childTopicIndex,
-                      questionIndex,
-                      currentIndex,
-                      subCurrentIndex,
+                      0,
+                      0,
+                      0,
                       e.target.value,
                       isChild
                     )
@@ -543,36 +555,6 @@ function Form() {
                 <span className='radio-btn'>   {choice.choice}</span>
               </div>
           )})}
-        </div>
-      )
-    } else if ((question.type === 'appendAns')) {
-      return (
-        <div className="mb-2 mt-2">
-          {question?.choiceValue?.map((choice, index) => {
-            return (
-                <div key={index}>
-                <input
-                  className=" form-check-input mb-3"
-                  type="radio"
-                  name={`radio-${question.id}`}
-                  value={choice.id}
-                  checked={answer === choice.choice}
-                  onChange={(e) =>
-                    handleAppendAns(
-                      formDataIndex,
-                      topicElementIndex,
-                      childTopicIndex,
-                      questionIndex,
-                      currentIndex,
-                      e.target.value,
-                      isChild
-                    )
-                  }
-                />
-                <span className='radio-btn'>   {choice.choice}</span>
-              </div>
-            )
-          })}
         </div>
       )
     } else {
@@ -819,33 +801,47 @@ function Form() {
         </div>
       )
     } else if (topicElement.type === "dynamicQuestion") {
+      const question = topicElement?.questions[0]
       return (
         <div>
-          {topicElement?.questions?.map((question, questionIndex) => {
-            return (
-            <div key={question.id}>
-              <div className="mb-1 mt-1">
-                {question.question}
-                {(
-                  topicDetail.currentIndex < topicDetail.min && Boolean(question.required)) && (
-                  <span style={{ color: 'red' }}> *</span>
-                )}
-              </div>
-              <div className="mb-1 mt-1 example">{question.example}</div>
+          {topicElement?.children?.map((childTopic, childTopicIndex) => {
+            const targetChoiceValue = isChild
+              ? formData[formDataIndex].topics[topicElementIndex].children[childTopicIndex].questions[0].choiceValue
+              : formData[formDataIndex].topics[topicElementIndex].questions[0].choiceValue;
+            const exists = targetChoiceValue.some(item => item.id === childTopic.id);
+            if(!exists) {
+              isChild 
+                ? formData[formDataIndex].topics[topicElementIndex].children[childTopicIndex].questions[0].choiceValue.push({id: childTopic.id, choice: childTopic.topic})
+                : formData[formDataIndex].topics[topicElementIndex].questions[0].choiceValue.push({id: childTopic.id, choice: childTopic.topic})
+            }    
+          })}
 
-              {renderAnswerInput({
-                question,
-                formDataIndex,
-                topicElementIndex,
-                questionIndex,
-                topicElement,
-                childTopicIndex,
-                subCurrentIndex: 0,
-                handleAnswerChange,
-                isChild
-              })}
+          <div key={question.id}>
+            <div className="mb-1 mt-1">
+              {renderQuestionText({
+                  question,
+                  formDataIndex,
+                  topicElementIndex,
+                  questionIndex: 0,
+                  childTopicIndex,
+                  isChild
+                })
+              }
             </div>
-          )})}
+            <div className="mb-1 mt-1 example">{question.example}</div>
+
+            {renderAnswerInput({
+              question,
+              formDataIndex,
+              topicElementIndex,
+              questionIndex: 0,
+              topicElement,
+              childTopicIndex,
+              subCurrentIndex: 0,
+              handleAnswerChange,
+              isChild
+            })}
+          </div>
         </div>
       )
     }
@@ -992,32 +988,38 @@ function Form() {
                                 {/* show children */}
                                 {topicElement?.children.length !== 0 && (
                                     <div>
-                                      {topicElement.children.map((childTopic, childTopicIndex) => (
-                                        <div key={childTopic.id}>
-                                          {/* <div className="card p-4 my-3 center-card"> */}
-                                            <hr className='mt-4 mb-5'/>
-                                            <div className="mb-1 mt-1 topic">{childTopic.topic}</div>
-                                            <div className="mb-1 mt-1 description">{childTopic.description}</div>
-                                            <hr />
-                                            <div className="mb-3 question">
-                                              {renderTopicQuestions({
-                                                topic: topicElement,
-                                                formDataIndex,
-                                                topicElementIndex,
-                                                childTopicIndex,
-                                                handleAnswerChange,
-                                                renderAnswerInput,
-                                                isChild: true
-                                              })}
+                                      {topicElement.children.map((childTopic, childTopicIndex) => {
+                                        return (topicElement.type === 'dynamicQuestion'
+                                          ? String(topicElement?.questions[0]?.answer[0]?.answer) === String(childTopic.id)
+                                          : true)
+                                          && (
+                                          <div key={childTopic.id}>
+                                              <hr className='mt-4 mb-5'/>
+                                              <div className="mb-1 mt-1 topic">{childTopic.topic}</div>
+                                              <div className="mb-1 mt-1 description">{childTopic.description}</div>
+                                              <hr />
+                                              <div className="mb-3 question">
+                                                {renderTopicQuestions({
+                                                  topic: topicElement,
+                                                  formDataIndex,
+                                                  topicElementIndex,
+                                                  childTopicIndex,
+                                                  handleAnswerChange,
+                                                  renderAnswerInput,
+                                                  isChild: true
+                                                })}
+                                              </div>
                                             </div>
-                                          </div>
-                                        // </div>
-                                      ))}
+                                        )}
+                                      )}
                                   </div>
                                 )}
-                                
+                               {/* {console.log(topicElement.topicDetail.currentIndex > topicElement.topicDetail.add - 1)}  */}
                                 {/* multi ans nav */}
-                                {(topicElement.type === "multipleAnswer" || topicElement.type === "dynamicQuestion") && (
+                                {(topicElement.type === "multipleAnswer" || topicElement.type === "dynamicQuestion") 
+                                // && topicElement.topicDetail.currentIndex > topicElement.topicDetail.add - 1 
+                                //   ? formData[formDataIndex].topics[topicElementIndex].topicDetail.childIndex = 0
+                                && (
                                   <div>
                                       {renderTopicNavigation({
                                         topicElement,
