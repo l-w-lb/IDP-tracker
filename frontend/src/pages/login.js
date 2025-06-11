@@ -30,12 +30,11 @@ function Login () {
                         };
                         setUser(fullUser);
                         
-                    if(getLoginStatus.user.role === 'user') {
-                        navigate('/formList')
-                    // } else if (getLoginStatus.user.role === 'approver') {
-                    } else {
-                        navigate('/approvalList')
-                    }
+                    // if(getLoginStatus.user.role === 'user') {
+                    navigate('/formList')
+                    // } else {
+                    //     navigate('/approvalList')
+                    // }
 
                 } else {
                     alert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')

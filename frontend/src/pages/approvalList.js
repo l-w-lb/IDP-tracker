@@ -17,6 +17,7 @@ function ApprovalList() {
             try {
             const formList = await fetchApprovalList();
             setApprovalList(formList);
+            console.log(formList)
             
             } catch (err) {
             console.error('Error loading form data:', err.message);

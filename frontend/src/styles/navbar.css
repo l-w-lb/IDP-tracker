@@ -9,10 +9,11 @@
   font-weight: bold;
 }
 
-.navbar-left {
-  flex: 1;
+.navbar-left, .navbar-center {
+  flex: 0;
   text-align: left;
-  margin: auto 20px;
+  margin-left: 20px;
+  white-space: nowrap;
 }
 
 .navbar-right {

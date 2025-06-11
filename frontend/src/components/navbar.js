@@ -25,6 +25,12 @@ function Navbar() {
         <div className="navbar-left">
           {user?.username ?? 'ไม่พบชื่อผู้ใช้'}
         </div>
+        <div className="navbar-center" onClick={() => navigate('/formList')} style={{ cursor: 'pointer' }}>
+          รายการแบบสอบถาม
+        </div>
+        <div className="navbar-center" onClick={() => navigate('/approvalList')}  style={{ cursor: 'pointer' }}>
+          รายการการอนุมัติ
+        </div>
         <div className="navbar-right" onClick={handleLogout} style={{ cursor: 'pointer' }}>
           Log out
         </div>

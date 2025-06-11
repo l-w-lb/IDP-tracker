@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useUser } from '../context/userContext.js';
 import { useFormContext } from '../context/FormContext.js';
@@ -404,7 +404,7 @@ function Form() {
           ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
             (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
           : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
-
+    console.log(question.choiceValue)
       if (question.type === 'listbox') {
       return (
         <div className="mb-4 mt-2">
@@ -577,6 +577,37 @@ function Form() {
           )})}
         </div>
       )
+    } else if ((question.type === 'datalist')) {
+      return (
+        // <div className="mb-4 mt-2">
+        //   <select
+        //     value={answer}
+        //     className="listbox"
+        //     onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, subCurrentIndex, e.target.value, isChild)}
+        //   >
+        //     <option value="" disabled>เลือก</option>
+        //     {question?.choiceValue?.map((item, itemIndex) => (
+        //       <option key={itemIndex} value={item.choice}>
+        //         {item.choice}
+        //       </option>
+        //     ))}
+        //   </select>
+        // </div>
+
+        <div className="mb-4 mt-2">
+          <input className='input-field' list="fruitOptions" name="fruit" id="fruitInput" />
+          <datalist id="fruitOptions">
+            {question?.choiceValue?.map((item, itemIndex) => (
+              <option key={itemIndex} value={item.choice}>
+                {item.choice}
+              </option>
+            ))}
+            {/* <option value="Apple"/>
+            <option value="Banana"/>
+            <option value="Orange"/> */}
+          </datalist>
+        </div>
+        )
     } else {
       return (
         <div className='mt-3'/>

@@ -58,7 +58,7 @@ function appendQuestionToTopic(topic, item) {
     topic.questions.push(question);
   }
 
-  if ((item.type === "listbox" ) && item.choiceText) {
+  if ((item.type === "listbox" || item.type === "datalist" ) && item.choiceText) {
     const isDuplicatechoice = question.choiceValue.some(v => v.id === item.choiceID);
     if (!isDuplicatechoice) {
       question.choiceValue.push({

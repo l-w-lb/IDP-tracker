@@ -30,7 +30,7 @@ function FormList() {
         loadData();
       }
     }, [user?.id]);
-    
+
   return (
     <div>
         <div className="card p-4 my-3 text-center center-card">
