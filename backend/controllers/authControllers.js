@@ -18,7 +18,8 @@ const checkLogin = (req, res) => {
 const fetchUserData = (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const sql = `SELECT account.id, account.username, account.password, role.name AS role
+    const sql = `SELECT account.id, account.username, account.password, role.name AS role,
+      account.lead, account.division, account.subdivision
             FROM account
             JOIN role ON account.roleID = role.id
             WHERE account.username = ?
@@ -34,7 +35,10 @@ const fetchUserData = (req, res) => {
         req.session.user = {
             id: user.id,
             username: user.username,
-            role: user.role
+            role: user.role,
+            lead: user.lead,
+            division: user.division,
+            subdivision: user.subdivision
         };
         console.log('SESSION AFTER LOGIN:', req.session.user);
         res.status(200).json({message: 'เข้าสู่ระบบแล้ว', user: req.session.user});

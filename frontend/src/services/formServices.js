@@ -80,8 +80,6 @@ function appendQuestionToTopic(topic, item) {
     }
   }
 }
-
-
 export const fetchformData = async (id, userID, partID) => {
         const res = await axios.post(`${formRoutes}/get-part-topic-question`, {
           formID: id,
@@ -158,3 +156,19 @@ export const uploadPDF = async (fileName, file, time) => {
         console.error('fail to generate PDF:', err.message);
       }
 }
+
+export const fetchSpecialQuestion = async (id) => {
+        const res = await axios.post(`${formRoutes}/get-special-question`, {
+            formID: id
+        });
+        return res.data
+    };
+
+export const insertSpecialAnswer = async (table, column, value) => {
+        const res = await axios.post(`${formRoutes}/insert-special-answer`, {
+          table: table,
+          column: column,
+          value: value
+        });
+        return res.data
+    };

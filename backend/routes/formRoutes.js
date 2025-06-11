@@ -30,5 +30,7 @@ router.post('/insert-user-answer', formController.insertUserAnswer);
 router.post('/get-user-answer', formController.getUserAnswer);
 router.post('/generate-pdf',PDFcontrollers.genPDF);
 router.post('/upload-pdf', upload.single('pdf'), PDFcontrollers.uploadPDF);
+router.post('/get-special-question',formController.getSpecialQuestion);
+router.post('/insert-special-answer',formController.insertSpecialAnswer);
 
 module.exports = router;

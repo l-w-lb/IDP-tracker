@@ -100,9 +100,52 @@ const getUserAnswer = (req, res) => {
   });
 };
 
+const getSpecialQuestion = (req, res) => {
+  const formId = req.body.formID;
+  const sql = `SELECT specialquestion.id, specialquestion.column, specialquestion.questionID,
+    specialquestion.table
+      FROM specialquestion
+      JOIN question ON question.id = specialquestion.questionID
+      JOIN topic ON topic.id = question.topicID
+      JOIN part ON part.id = topic.partID
+      JOIN form ON form.id = part.formID
+      WHERE form.id = ?
+  `;
+
+  db.query(sql, [formId], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+};
+
+const insertSpecialAnswer = (req, res) => {
+  const { table, value, column } = req.body;
+  const allowedTables = ['account'];
+  const allowedColumns = ['id', 'fullname', 'personnel', 'position', 'level', 'lead', 'division', 'subdivision'];
+
+  if (!allowedTables.includes(table) || !allowedColumns.includes(column)) {
+    return res.status(400).json({ error: 'Invalid table or column name' });
+  }
+
+  const sql = `
+    INSERT INTO \`${table}\` (id, \`${column}\`)
+    VALUES ?
+    ON DUPLICATE KEY UPDATE
+      \`${column}\` = VALUES(\`${column}\`)
+  `;
+  console.log(table, value, column)
+
+  db.query(sql, [value], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+}
+
 module.exports = {
   getFormTitleDescription,
   getPartTopicQuestion,
   insertUserAnswer,
-  getUserAnswer
+  getUserAnswer,
+  getSpecialQuestion,
+  insertSpecialAnswer
 };

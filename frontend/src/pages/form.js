@@ -13,7 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer } from '../services/formServices.js';
 
 function Form() {
   const { user } = useUser();
@@ -28,6 +28,7 @@ function Form() {
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formData, setFormData] = useState([]);
+  const [specialquestion, setSpecialquestion] = useState([]);
 
   useEffect(() => {
     if (!user || !user.id) return; 
@@ -43,6 +44,9 @@ function Form() {
         const structure = await fetchformData(id, accountID, partID);
         setFormData(structure);
         console.log(structure);
+
+        const sq = await fetchSpecialQuestion(id);
+        setSpecialquestion(sq)
       } catch (error) {
         console.error('Load error:', error);
       }
@@ -60,6 +64,25 @@ function Form() {
       }
     };
 
+  const insertSpecialAns = async (table, column, value) => {
+      try {
+        const insertSpecialAnswers = await insertSpecialAnswer(table, column, value);
+      } catch (err) {
+        console.error('fail to insert data:', err.message);
+      }
+    };
+
+  const handleSpecialquestion = async (value) => {
+    value.map((data, index) => {
+      specialquestion.map((sq, sqIndex) => {
+        if (sq.questionID === data[0]) {
+          insertSpecialAns(sq.table, sq.column, [[accountID, data[4]]])
+        }
+      })
+      
+    })
+  };
+
   const genPDF = async (formTitle, formID, data, userID) => {
     console.log('pdf generated');
       try {
@@ -71,6 +94,7 @@ function Form() {
 
   const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild) => {
     // console.log(partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild)
+    
     setFormData(prevFormData => {
       const updated = [...prevFormData];
       const questions = isChild
@@ -304,15 +328,17 @@ function Form() {
         });
       });
 
-      if (result === '') {
-          alert("ยังไม่ได้มีการกรอกคำตอบ");
-          return
-      }
+      // if (result === '') {
+      //     alert("ยังไม่ได้มีการกรอกคำตอบ");
+      //     return
+      // }
+
+      handleSpecialquestion(result)
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      insertAnswer(result);
-      genPDF(formTitle,id,user.username,user.id);
+      // insertAnswer(result);
+      // genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
-      navigate('/formList');
+      // navigate('/formList');
   };
 
   const formatAns = (topic) => {
@@ -404,7 +430,7 @@ function Form() {
           ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
             (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
           : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
-    console.log(question.choiceValue)
+    // console.log(question.choiceValue)
       if (question.type === 'listbox') {
       return (
         <div className="mb-4 mt-2">
@@ -552,7 +578,6 @@ function Form() {
                   value={choice.id}
                   checked={String(answer) === String(choice.id)}
                   onChange={(e) => {
-                    console.log('pp')
                     deleteDynamicAnswer({
                       partIndex: formDataIndex,
                       topicIndex: topicElementIndex,
@@ -907,6 +932,8 @@ function Form() {
     childTopicIndex,
     isChild
   }) {
+    // handleSpecialquestion('ss')
+
     if (question.questionDetail?.sum !== undefined && question.questionDetail?.sum !== null) {
       const total = question.type && totalTime(question.answer)
               if (isChild) {
