@@ -17,19 +17,20 @@ function FormList() {
     const [formList, setFormList] = useState([]);
 
     useEffect(() => {
-        const loadData = async () => {
-          try {
-            const formList = await fetchFormList(user.id);
-            setFormList(formList);
-            
-          } catch (err) {
-            console.error('Error loading form data:', err.message);
-          }
-        };
-    
-        loadData();
-      }, []);
+      const loadData = async () => {
+        try {
+          const formList = await fetchFormList(user.id);
+          setFormList(formList);
+        } catch (err) {
+          console.error('Error loading form data:', err.message);
+        }
+      };
 
+      if (user?.id) {
+        loadData();
+      }
+    }, [user?.id]);
+    
   return (
     <div>
         <div className="card p-4 my-3 text-center center-card">
