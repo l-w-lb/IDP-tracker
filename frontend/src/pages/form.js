@@ -70,7 +70,7 @@ function Form() {
   }
 
   const handleAnswerChange = (partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild) => {
-    console.log(partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild)
+    // console.log(partIndex, topicIndex, childIndex, questionIndex, groupInstance, subInstance, newAnswer, isChild)
     setFormData(prevFormData => {
       const updated = [...prevFormData];
       const questions = isChild
@@ -80,7 +80,7 @@ function Form() {
 
       if (question.questionDetail?.sum !== undefined && question.questionDetail?.sum !== null) {
         const total = question.type && totalTime(question.answer)
-                if (isChild) {
+        if (isChild) {
           updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].questionDetail.sum = total;
         } else {
           updated[partIndex].topics[topicIndex].questions[questionIndex].questionDetail.sum = total;
@@ -141,7 +141,6 @@ function Form() {
     }
 
     if (action === -1) {
-      console.log(formData[partIndex].topics[topicIndex].children)
       formData[partIndex].topics[topicIndex].questions.map((question, questionIndex) => {
         question.answer.map((answer, answerIndex) => {
           if (answer.groupInstance > currentValue - 1) {
@@ -163,7 +162,6 @@ function Form() {
         childTopic.questions.map((question, questionIndex) => {
           question.answer.map((answer, answerIndex) => {
             if (answer.groupInstance > currentValue - 1) {
-              console.log(answer)
               handleAnswerChange(
                 partIndex, 
                 topicIndex,
@@ -353,6 +351,31 @@ function Form() {
   //   console.log(formData)
   // },[formData])
 
+  function deleteDynamicAnswer({
+    partIndex,
+    topicIndex,
+    childID,
+    isChild
+  }) {
+    formData[partIndex]?.topics[topicIndex].children.map((child, childIndex) => {
+      child.questions.map((question, questionIndex) => {
+        question.answer.map((answer, ansIndex) => {
+          console.log(childIndex,'skf')
+          handleAnswerChange(
+            partIndex, 
+            topicIndex, 
+            childIndex, 
+            questionIndex, 
+            answer.groupInstance, 
+            answer.subInstance, 
+            '', 
+            true
+          )
+        })
+      })
+    })
+  }
+
 
   function renderAnswerInput({
     question,
@@ -370,28 +393,17 @@ function Form() {
 
     const currentSubIndex =
       formData[formDataIndex]?.topics[topicElementIndex]?.children[childTopicIndex]?.topicDetail.currentIndex;
-    // console.log(formData[formDataIndex]?.topics[topicElementIndex]?.topic, formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion')
-    // const answerIndex = 
-    //   formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion'
-    //     ? currentIndex
-    //     : currentIndex
 
     const answer = 
       formData[formDataIndex]?.topics[topicElementIndex]?.type === 'dynamicQuestion'
         ? isChild
           ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
             (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
-          : topicElement.questions[0]?.answer[0].answer || ''
+          : topicElement.questions[0]?.answer[0]?.answer || ''
         : isChild
           ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
             (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
           : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
-
-
-    // const answer = isChild
-    //   ? formData[formDataIndex]?.topics[topicElementIndex]?.children?.[childTopicIndex]?.questions?.[questionIndex]?.answer?.find
-    //     (a => a.groupInstance === currentIndex && a.subInstance === currentSubIndex)?.answer || ''
-    //   : topicElement.questions[questionIndex]?.answer?.find(a => a.groupInstance === currentIndex)?.answer || '';
 
       if (question.type === 'listbox') {
       return (
@@ -539,7 +551,15 @@ function Form() {
                   name={`radio-${question.id}`}
                   value={choice.id}
                   checked={String(answer) === String(choice.id)}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    console.log('pp')
+                    deleteDynamicAnswer({
+                      partIndex: formDataIndex,
+                      topicIndex: topicElementIndex,
+                      childID: Number(answer),
+                      isChild
+                    });
+
                     handleAnswerChange(
                       formDataIndex,
                       topicElementIndex,
@@ -549,8 +569,8 @@ function Form() {
                       0,
                       e.target.value,
                       isChild
-                    )
-                  }
+                    );
+                  }}
                 />
                 <span className='radio-btn'>   {choice.choice}</span>
               </div>
