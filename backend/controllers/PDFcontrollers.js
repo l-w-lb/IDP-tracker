@@ -5,8 +5,8 @@ const path = require('path');
 const db = require('../db');
 
 const genPDF = (req, res) => {
-  const {formTitle, username, userID, formID} = req.body;
-  console.log(formTitle, username, userID, formID)
+  const {formTitle, username, userID, formID, data} = req.body;
+  // console.log(formTitle, username, userID, formID, data)
 
   const dir = path.join(__dirname, '..', 'uploads', 'generatedPdf');
 
@@ -20,8 +20,32 @@ const genPDF = (req, res) => {
   const doc = new PDFDocument();
   const writeStream = fs.createWriteStream(filePath);
 
+  const fontPath = path.join(__dirname, '..', 'fonts', 'Sarabun', 'Sarabun-Medium.ttf');
+  doc.registerFont('Sarabun', fontPath);
+  doc.font('Sarabun');
+
+  const fontPathRegular = path.join(__dirname, '..', 'fonts', 'Sarabun', 'Sarabun-Regular.ttf');
+  const fontPathBold = path.join(__dirname, '..', 'fonts', 'Sarabun', 'Sarabun-Bold.ttf');
+  const fontPathThin = path.join(__dirname, '..', 'fonts', 'Sarabun', 'Sarabun-Thin.ttf');
+
+  doc.registerFont('Sarabun-Regular', fontPathRegular);
+  doc.registerFont('Sarabun-Bold', fontPathBold);
+  doc.registerFont('Sarabun-Thin', fontPathThin);
+
   doc.pipe(writeStream);
-  doc.text(`name: ${username}`);
+  data.map((data, dataIndex) => {
+    doc.font('Sarabun-Bold').text(`${data.part}`);
+    data.topics.map((topic, topicIndex) => {
+      doc.font('Sarabun-Bold').text(`${topic.topic}`);
+      topic.questions.map((question, questionIndex) => {
+        doc.font('Sarabun-Regular').text(`${question.question}`);
+        question.answer.map((ans, ansIndex) => {
+          doc.font('Sarabun-Thin').text(`${ans.answer}`);
+        })
+      })
+    })
+  })
+  doc.font('Sarabun-Thin').text(``);
   doc.end();
 
   writeStream.on('finish', () => {
@@ -66,7 +90,21 @@ const uploadPDF = (req, res) => {
   });
 };
 
+const deletePdfPath = (req, res) => {
+  const filePath = req.body.path.trim()
+  const wholePath = path.join(__dirname, '..', filePath);
+
+  fs.unlink(wholePath, (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'ลบไฟล์ไม่สำเร็จ' });
+    }
+    res.json({ message: 'ลบไฟล์สำเร็จ' });
+  });
+};
+
 module.exports = {
   genPDF,
-  uploadPDF
+  uploadPDF,
+  deletePdfPath
 };

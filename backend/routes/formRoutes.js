@@ -33,5 +33,6 @@ router.post('/upload-pdf', upload.single('pdf'), PDFcontrollers.uploadPDF);
 router.post('/get-special-question',formController.getSpecialQuestion);
 router.post('/insert-special-answer',formController.insertSpecialAnswer);
 router.post('/insert-new-datalist',formController.insertNewDatalist);
+router.post('/delete-pdf-path',PDFcontrollers.deletePdfPath);
 
 module.exports = router;

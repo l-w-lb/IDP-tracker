@@ -147,7 +147,6 @@ const insertSpecialAnswer = (req, res) => {
     ON DUPLICATE KEY UPDATE
       \`${column}\` = VALUES(\`${column}\`)
   `;
-  console.log(table, value, column)
 
   db.query(sql, [value], (err, result) => {
     if (err) throw err;

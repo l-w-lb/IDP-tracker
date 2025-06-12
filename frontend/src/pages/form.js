@@ -13,7 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer, insertNewDatalist } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer, insertNewDatalist, deletePdfPath } from '../services/formServices.js';
 
 function Form() {
   const { user } = useUser();
@@ -86,7 +86,7 @@ function Form() {
   const genPDF = async (formTitle, formID, data, userID) => {
     console.log('pdf generated');
       try {
-        const genPDF = await generatePDF(formTitle, formID, data, userID);
+        const genPDF = await generatePDF(formTitle, formID, data, userID, formData);
       } catch (err) {
         console.error('fail to generates PDF:', err.message);
       }
@@ -230,24 +230,31 @@ function Form() {
   };
 
   const handleDeleteFile = (partIndex, topicIndex, childIndex, groupInstance, subInstance, isChild) => {
-    setFormData(prevData => {
-      const updated = [...prevData];
-      const questions = isChild 
+    const questions = isChild 
         ? formData[partIndex].topics[topicIndex].children[childIndex].questions
         : formData[partIndex].topics[topicIndex].questions;
+
+    // console.log(questions[0].answer)
+    // questions[0].answer.map((ans, ansIndex) => {
+    //   if (ans.groupInstance === groupInstance && ans.subInstance === subInstance) {
+    //     deletePdfPath(ans.answer);
+    //   }
+    // })
+
+    setFormData(prevData => {
+      const updated = [...prevData];
 
       questions.map((question, questionIndex) => {
         question.answer.map((ans, ansIndex) => {
           if (ans.groupInstance === groupInstance && ans.subInstance === subInstance) {
-            if (isChild) {
-              updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer[ansIndex].answer = '';
-            } else {
-              updated[partIndex].topics[topicIndex].questions[questionIndex].answer[ansIndex].answer = '';
-            }
+            // if (isChild) {
+            //   updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer[ansIndex].answer = '';
+            // } else {
+            //   updated[partIndex].topics[topicIndex].questions[questionIndex].answer[ansIndex].answer = '';
+            // }
           }
         })
       })
-
       return updated;
     })
   };
@@ -350,6 +357,11 @@ function Form() {
         topic.questions.forEach(question => {
           if (Array.isArray(question.answer)) {
             question.answer.forEach((a, instanceIndex) => {
+              // if (question.type === 'file') {
+              //   console.log('sdcx')
+              //   deletePdfPath(a.answer);
+              // }
+
               if (question.type === 'datalist') {
                 if (a.answer != null) {
                   result[1].push([
@@ -829,7 +841,6 @@ function Form() {
                         onClick={(e) => {
                           e.stopPropagation();
                           const pdfUrl = BASE_URL + answer.answer;
-                          console.log(pdfUrl)
                           window.open(pdfUrl, '_blank');
                         }}
                       >

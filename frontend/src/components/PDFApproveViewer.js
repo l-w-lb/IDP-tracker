@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 function PDFViewer() {
   const { pdfName } = useParams();
   console.log(pdfName)
-  // const pdfPath = `http://localhost:3300${pdfName}`;
-  const pdfPath = `http://localhost:3300/uploads/ทดสอบ_1748319286517.pdf`;
+  const pdfPath = `http://localhost:3300${pdfName}`;
+  // const pdfPath = `http://localhost:3300/uploads/ทดสอบ_1748319286517.pdf`;
 
 
   return (

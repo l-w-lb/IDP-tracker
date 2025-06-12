@@ -132,13 +132,14 @@ export const insertUserAnswer = async (value) => {
       }
     };
 
-export const generatePDF = async (formTitle, formID, username, userID) => {
+export const generatePDF = async (formTitle, formID, username, userID, data) => {
       try {
         const res = await axios.post(`${formRoutes}/generate-pdf`, {
             formTitle: formTitle,
             formID: formID,
             username: username,
             userID: userID,
+            data: data
         })
       } catch (err) {
         console.error('fail to generate PDF:', err.message);
@@ -178,4 +179,11 @@ export const insertNewDatalist = async (value) => {
             value: value
         });
         return res.data
+    };
+
+  export const deletePdfPath = async (value) => {
+        const res = await axios.post(`${formRoutes}/delete-pdf-path`, {
+            path: value
+        });
+        console.log(res)
     };
