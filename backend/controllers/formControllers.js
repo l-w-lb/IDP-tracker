@@ -76,6 +76,20 @@ const insertUserAnswer = (req, res) => {
   });
 };
 
+const insertNewDatalist = (req, res) => {
+  const value = req.body.value;
+  const sql = `INSERT INTO choice (questionID, text)
+      VALUES ?
+      ON DUPLICATE KEY UPDATE
+        text = VALUES(text);
+  `;
+
+  db.query(sql, [value], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+};
+
 const getUserAnswer = (req, res) => {
   const formID = req.body.formID;
   const accountID = req.body.accountID;
@@ -147,5 +161,6 @@ module.exports = {
   insertUserAnswer,
   getUserAnswer,
   getSpecialQuestion,
-  insertSpecialAnswer
+  insertSpecialAnswer,
+  insertNewDatalist
 };

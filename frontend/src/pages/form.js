@@ -13,7 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer } from '../services/formServices.js';
+import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer, insertNewDatalist } from '../services/formServices.js';
 
 function Form() {
   const { user } = useUser();
@@ -312,43 +312,55 @@ function Form() {
         }
       }
 
-      let result = [];
+      let result = [[],[]];
 
       formData.forEach(part => {
         part.topics.forEach(topic => {
           let newResult = formatAns(topic);
-          result = [...result, ...newResult]
+          result[0] = [...result[0], ...newResult[0]]
+          result[1] = [...result[1], ...newResult[1]]
 
           if (topic.children.length !== 0) {
             topic.children.forEach(topic => {
               newResult = formatAns(topic);
-              result = [...result, ...newResult]
+              result[0] = [...result[0], ...newResult[0]]
+              result[1] = [...result[1], ...newResult[1]]
             })
           }
         });
       });
 
-      if (result === '') {
+      if (result[0] === '') {
           alert("ยังไม่ได้มีการกรอกคำตอบ");
           return
       }
 
-      handleSpecialquestion(result)
+      handleSpecialquestion(result[0])
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      insertAnswer(result);
+      insertAnswer(result[0]);
+      insertNewDatalist(result[1]);
       genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
   };
 
   const formatAns = (topic) => {
-      const result = [];
+      const result = [[],[]];
 
         topic.questions.forEach(question => {
           if (Array.isArray(question.answer)) {
             question.answer.forEach((a, instanceIndex) => {
+              if (question.type === 'datalist') {
+                if (a.answer != null) {
+                  result[1].push([
+                    question.id,
+                    a.answer,
+                  ]);
+                }
+              }
+
               if (a.answer != null) {
-                result.push([
+                result[0].push([
                   question.id,
                   accountID,
                   a.groupInstance,
@@ -604,32 +616,32 @@ function Form() {
       )
     } else if ((question.type === 'datalist')) {
       return (
-        // <div className="mb-4 mt-2">
-        //   <select
-        //     value={answer}
-        //     className="listbox"
-        //     onChange={(e) => handleAnswerChange(formDataIndex, topicElementIndex, childTopicIndex, questionIndex, currentIndex, subCurrentIndex, e.target.value, isChild)}
-        //   >
-        //     <option value="" disabled>เลือก</option>
-        //     {question?.choiceValue?.map((item, itemIndex) => (
-        //       <option key={itemIndex} value={item.choice}>
-        //         {item.choice}
-        //       </option>
-        //     ))}
-        //   </select>
-        // </div>
-
         <div className="mb-4 mt-2">
-          <input className='input-field' list="fruitOptions" name="fruit" id="fruitInput" />
-          <datalist id="fruitOptions">
+          <input 
+            className='input-field' 
+            list="datalist" 
+            name="data" 
+            value={answer}
+            id="dataInput" 
+            onChange={(e) => {
+              handleAnswerChange(
+                    formDataIndex,
+                    topicElementIndex,
+                    childTopicIndex,
+                    questionIndex,
+                    currentIndex,
+                    subCurrentIndex,
+                    e.target.value,
+                    isChild
+                  );
+            }}
+          />
+          <datalist id="datalist">
             {question?.choiceValue?.map((item, itemIndex) => (
               <option key={itemIndex} value={item.choice}>
                 {item.choice}
               </option>
             ))}
-            {/* <option value="Apple"/>
-            <option value="Banana"/>
-            <option value="Orange"/> */}
           </datalist>
         </div>
         )

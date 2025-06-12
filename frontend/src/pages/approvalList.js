@@ -9,7 +9,7 @@ import { fetchApprovalList } from '../services/approvalListServices.js';
 
 function ApprovalList() {
     const { user } = useUser();
-    // console.log(user)
+    console.log(user)
 
     const [approvalList, setApprovalList] = useState([]);
 
@@ -19,8 +19,8 @@ function ApprovalList() {
               let lead = ['-']
               let value = user.subdivision
               let leaderOF = 'subdivision'
-              if (user.lead === 'ผอ.กลุ่ม') {
-                lead.push('ผอ.กอง')
+              if (user.lead === 'ผอ.กอง') {
+                lead.push('ผอ.กลุ่ม')
                 value = user.division
                 leaderOF = 'division'
               }
@@ -66,6 +66,7 @@ function ApprovalList() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
+                          <i class="bi bi-box-arrow-right"></i>
                           {/* {list.path} */}
                         </a>
 

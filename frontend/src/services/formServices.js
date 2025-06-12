@@ -172,3 +172,10 @@ export const insertSpecialAnswer = async (table, column, value) => {
         });
         return res.data
     };
+
+export const insertNewDatalist = async (value) => {
+        const res = await axios.post(`${formRoutes}/insert-new-datalist`, {
+            value: value
+        });
+        return res.data
+    };
