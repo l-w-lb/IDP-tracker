@@ -328,17 +328,17 @@ function Form() {
         });
       });
 
-      // if (result === '') {
-      //     alert("ยังไม่ได้มีการกรอกคำตอบ");
-      //     return
-      // }
+      if (result === '') {
+          alert("ยังไม่ได้มีการกรอกคำตอบ");
+          return
+      }
 
       handleSpecialquestion(result)
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      // insertAnswer(result);
-      // genPDF(formTitle,id,user.username,user.id);
+      insertAnswer(result);
+      genPDF(formTitle,id,user.username,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
-      // navigate('/formList');
+      navigate('/formList');
   };
 
   const formatAns = (topic) => {
