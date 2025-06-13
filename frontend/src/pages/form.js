@@ -83,10 +83,17 @@ function Form() {
     })
   };
 
-  const genPDF = async (formTitle, formID, data, userID) => {
+  const genPDF = async (formTitle, formID, userID) => {
     console.log('pdf generated');
       try {
-        const genPDF = await generatePDF(formTitle, formID, data, userID, formData);
+        let status = 'รอการอนุมัติจากผอ.กลุ่ม'
+        if (user.lead === 'ผอ.กลุ่ม') {
+          status = 'รอการอนุมัติจากผอ.กอง'
+        }
+        if (user.lead === 'ผอ.กอง') {
+          status = 'รอการอนุมัติจากฝ่ายบุคคล'
+        }
+        const genPDF = await generatePDF(formTitle, formID, status, userID, formData);
       } catch (err) {
         console.error('fail to generates PDF:', err.message);
       }
@@ -345,8 +352,11 @@ function Form() {
       handleSpecialquestion(result[0])
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
       insertAnswer(result[0]);
-      insertNewDatalist(result[1]);
-      genPDF(formTitle,id,user.username,user.id);
+      if (result[1].length !== 0) {
+        insertNewDatalist(result[1]);
+      }
+      
+      genPDF(formTitle,id,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
   };

@@ -1,4 +1,4 @@
-.ellipsis {
+.title-ellipsis {
   white-space: nowrap;       
   overflow: hidden;          
   text-overflow: ellipsis;   
@@ -6,3 +6,12 @@
   display: inline-block;     
   vertical-align: middle;
 }
+
+/* .fullname-ellipsis {
+  white-space: nowrap;       
+  overflow: hidden;          
+  text-overflow: ellipsis;   
+  max-width: 250px;         
+  display: inline-block;     
+  vertical-align: left;
+} */

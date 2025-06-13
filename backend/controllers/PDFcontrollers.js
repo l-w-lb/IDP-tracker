@@ -6,7 +6,7 @@ const db = require('../db');
 const { PDFDocument  } = require('pdf-lib');
 
 const genPDF = (req, res) => {
-  const {formTitle, username, userID, formID, data} = req.body;
+  const {formTitle, status, userID, formID, data} = req.body;
   // console.log(formTitle, username, userID, formID, data)
 
   const dir = path.join(__dirname, '..', 'uploads', 'generatedPdf');
@@ -60,7 +60,7 @@ const genPDF = (req, res) => {
          status = VALUES(status),
          path = VALUES(path)
       `,
-      [userID, formID, 'รอการอนุมัติจากผอ.กลุ่ม', fileUrl],
+      [userID, formID, status, fileUrl],
       (err, result) => {
         if (err) {
           console.error('❌ DB insert error:', err);

@@ -63,7 +63,7 @@ function FormList() {
                         </td>
                         <td style={{
                           color:
-                            list.status === 'อนุมัติ' ? 'green' :
+                            list.status === 'อนุมัติ' ? '#28a745' :
                             list.status === 'ไม่อนุมัติ' ? 'red' :
                             'blue'
                         }}>

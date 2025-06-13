@@ -59,19 +59,14 @@ const PDFEditor = () => {
 
   const handleApproveClick = () => {
     downloadPDF()
-    // let status = 'รอการอนุมัติจากผอ.กอง'
-    // if (user.lead === 'ผอ.กอง') {
-    //   status = 'รอการอนุมัติจากฝ่ายบุคคล'
-    // } else if (user.role === 'hr') {
-    //   status = 'อนุมัติ'
-    // }
-    // updatePdfStatus(status, `/uploads/${folder}/${pdfName}`, pdfId);
     navigate('/approvalList');
+    // window.location.reload();
   };
 
   const handleDeclineClick = () => {
     updatePdfStatus('ไม่อนุมัติ', `/uploads/${folder}/${pdfName}`, pdfId);
     navigate('/approvalList');
+    // window.location.reload();
   };
 
   const downloadPDF = async () => {
@@ -93,7 +88,9 @@ const PDFEditor = () => {
     let status = 'รอการอนุมัติจากผอ.กอง'
     if (user.lead === 'ผอ.กอง') {
       status = 'รอการอนุมัติจากฝ่ายบุคคล'
-    } else if (user.role === 'hr') {
+    }
+    if (user.role === 'hr') {
+      console.log('k')
       status = 'อนุมัติ'
     }
     updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId);

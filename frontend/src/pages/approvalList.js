@@ -2,13 +2,14 @@ import '../styles/approvalList.css';
 
 import { useUser } from '../context/userContext.js';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { fetchApprovalList } from '../services/approvalListServices.js';
 
 function ApprovalList() {
     const { user } = useUser();
-    // console.log(user)
+    const location = useLocation();
+    // console.log(user.role === 'hr')
 
     const [approvalList, setApprovalList] = useState([]);
 
@@ -19,6 +20,7 @@ function ApprovalList() {
               let value = user.subdivision
               let leaderOF = 'subdivision'
               let status = 'รอการอนุมัติจากผอ.กลุ่ม';
+              let hr = false
 
               if (user.lead === 'ผอ.กอง') {
                 lead.push('ผอ.กลุ่ม')
@@ -26,14 +28,16 @@ function ApprovalList() {
                 leaderOF = 'division'
                 status = 'รอการอนุมัติจากผอ.กอง';
               } 
-              // else if (user.role === 'hr') {
+              
+              if (user.role === 'hr') {
               //   lead.push('ผอ.กอง')
               //   value = user.division
               //   leaderOF = 'division'
-              //   status = 'รอการอนุมัติจากฝ่ายบุคคล';
-              // }
+                status = 'รอการอนุมัติจากฝ่ายบุคคล';
+                hr = true
+              }
 
-              const formList = await fetchApprovalList(lead, value, leaderOF, status);
+              const formList = await fetchApprovalList(lead, value, leaderOF, status, hr);
               setApprovalList(formList);
               console.log(formList)
             
@@ -43,7 +47,7 @@ function ApprovalList() {
         };
     
         loadData();
-    }, []);
+    }, [location.key]);
 
   return (
     <div>
@@ -55,7 +59,7 @@ function ApprovalList() {
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">ชื่อ-นามสกุล</th>
-                <th scope="col">แบบสอบถาม</th>
+                <th scope="col" className="ellipsis">แบบสอบถาม</th>
                 {/* <th scope="col">สถานะ</th> */}
                 <th scope="col">pdf</th>
               </tr>
@@ -65,7 +69,7 @@ function ApprovalList() {
                 <tr key={index}>
                   <th scope="row">{index + 1}</th>
                   <td>{list.fullname}</td>
-                  <td className="ellipsis" title={list.part ? `${list.title}/${list.part}` : list.title}>
+                  <td className="title-ellipsis" title={list.part ? `${list.title}/${list.part}` : list.title}>
                     {list.part ? `${list.title}/${list.part}` : list.title}
                   </td>
                   {/* <td style={{
@@ -76,7 +80,7 @@ function ApprovalList() {
                   }}>
                     {list.status}
                   </td> */}
-                  <td className="ellipsis" title={list.path}>
+                  <td title={list.path}>
                     <Link
                       to={{
                         pathname: `/pdfEditor${list.path}`,

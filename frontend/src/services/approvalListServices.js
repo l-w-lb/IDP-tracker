@@ -1,13 +1,14 @@
 import axios from 'axios';
 import { approvalListRoutes } from '../config';
 
-export const fetchApprovalList = async (lead, value, leaderOf, status) => {
+export const fetchApprovalList = async (lead, value, leaderOf, status, hr) => {
     // console.log(lead, value, leaderOf)
         const res = await axios.post(`${approvalListRoutes}/get-approval-list`, {
             lead: lead,
             value: value,
             leaderOf: leaderOf,
-            status: status
+            status: status,
+            hr: hr
         });
         return (
             res.data
