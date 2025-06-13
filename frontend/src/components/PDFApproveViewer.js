@@ -5,6 +5,8 @@ import "../styles/pdfPreviewer.css";
 
 import { updatePdfStatus } from '../services/approvalListServices.js';
 
+import PDFEditor from './PDFEditor.js';
+
 function PDFViewer() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -32,7 +34,10 @@ function PDFViewer() {
 
   return (
     <div className="pdf-container">
-      <iframe
+      <div>
+        <PDFEditor pdfUrl={pdfPath} />
+      </div>
+      {/* <iframe
         src={pdfPath}
         title="PDF Viewer"
         className="pdf-iframe"
@@ -42,7 +47,7 @@ function PDFViewer() {
       </button>
       <button className="floating-btn fab2" onClick={() => handleDeclineClick()} title="ไม่อนุมัติ">
         <i className="bi bi-x-lg"></i>
-      </button>
+      </button> */}
     </div>
   );
 }

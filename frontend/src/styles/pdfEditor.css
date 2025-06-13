@@ -1,0 +1,35 @@
+.pdf-editor-container {
+  display: flex;
+  flex-direction: column;  /* เรียงจากบนลงล่าง */
+  align-items: center;     /* จัดกึ่งกลางแนวนอน */
+  gap: 10px;               /* เว้นระยะห่างระหว่าง canvas กับปุ่ม */
+  padding: 20px;
+  background-color: #95c6b0; /* ตัวอย่างพื้นหลัง */
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
+}
+
+.pdf-canvas {
+  border: 1px solid black;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  background-color: white;
+}
+/* 
+.navigation-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+
+.navigation-buttons button {
+  margin: 0 5px;
+}
+
+.navigation-buttons span {
+  font-weight: bold;
+  margin: 0 10px;
+} */

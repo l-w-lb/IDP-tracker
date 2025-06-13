@@ -1,8 +1,9 @@
-const PDFDocument = require('pdfkit');
+const PDFkit = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
 const db = require('../db');
+const { PDFDocument  } = require('pdf-lib');
 
 const genPDF = (req, res) => {
   const {formTitle, username, userID, formID, data} = req.body;
@@ -17,7 +18,7 @@ const genPDF = (req, res) => {
   const fileName = `${formTitle}_${Date.now()}.pdf`;
   const filePath = path.join(dir, fileName);
 
-  const doc = new PDFDocument();
+  const doc = new PDFkit();
   const writeStream = fs.createWriteStream(filePath);
 
   const fontPath = path.join(__dirname, '..', 'fonts', 'Sarabun', 'Sarabun-Medium.ttf');
@@ -59,7 +60,7 @@ const genPDF = (req, res) => {
          status = VALUES(status),
          path = VALUES(path)
       `,
-      [userID, formID, 'รอการอนุมัติ', fileUrl],
+      [userID, formID, 'รอการอนุมัติจากผอ.กลุ่ม', fileUrl],
       (err, result) => {
         if (err) {
           console.error('❌ DB insert error:', err);
@@ -104,22 +105,47 @@ const deletePdfPath = (req, res) => {
 };
 
 const updatePdfStatus = (req, res) => {
-  const { status, pdfID } = req.body;
+  const { status, path, pdfID } = req.body;
   
   const sql = `UPDATE generatedpdf
-    SET status = ?
+    SET status = ?, path = ?
     WHERE id = ?;
   `;
 
-  db.query(sql, [status, pdfID], (err, result) => {
+  db.query(sql, [status, path, pdfID], (err, result) => {
     if (err) throw err;
     res.json(result);
   });
 };
 
+const saveEditedPdf = async (req, res) => {
+  try {
+    const { base64Pdf, fileName } = req.body;
+    console.log('base64Pdf, fileName')
+
+    const pdfBytes = Buffer.from(base64Pdf, 'base64');
+
+    const pdfDoc = await PDFDocument .load(pdfBytes);
+
+    const editedPdfBytes = await pdfDoc.save();
+
+    const savePath = path.join(__dirname, '../uploads/generatedPdf', fileName);
+    console.log(savePath)
+
+    fs.writeFileSync(savePath, editedPdfBytes);
+
+    res.json({ success: true, message: 'PDF saved', path: savePath });
+  } catch (error) {
+    console.error('Error saving PDF:', error);
+    res.status(500).json({ success: false, error: 'Failed to save PDF' });
+  }
+};
+
+
 module.exports = {
   genPDF,
   uploadPDF,
   deletePdfPath,
-  updatePdfStatus
+  updatePdfStatus,
+  saveEditedPdf
 };

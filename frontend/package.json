@@ -11,6 +11,8 @@
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.13.1",
     "dotenv": "^16.5.0",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^2.14.305",
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "^19.1.0",

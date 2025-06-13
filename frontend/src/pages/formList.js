@@ -53,6 +53,7 @@ function FormList() {
                         <td>
                             <Link 
                               to={`/form/${list.title}`} 
+                              // className="ellipsis"
                               className="form-link ellipsis"
                               title={list.part ? `${list.title}/${list.part}` : list.title}
                               onClick={() => setForm({formID: list.formID, partID: list.partID, part:list.part})} 
@@ -60,7 +61,14 @@ function FormList() {
                                 {list.part ? `${list.title}/${list.part}` : list.title}
                             </Link>
                         </td>
-                        <td>{list.status ? list.status : '-'}</td>
+                        <td style={{
+                          color:
+                            list.status === 'อนุมัติ' ? 'green' :
+                            list.status === 'ไม่อนุมัติ' ? 'red' :
+                            'blue'
+                        }}>
+                          {list.status ? list.status : '-'}
+                        </td>
                         <td className="ellipsis" title={list.path}>
                           {list.path ? (
                             <a
@@ -68,7 +76,7 @@ function FormList() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              {list.path}
+                              <i className="bi bi-box-arrow-right"></i>
                             </a>
                           ) : (
                             '-'

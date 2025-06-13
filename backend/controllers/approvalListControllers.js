@@ -1,7 +1,7 @@
 const db = require('../db');
 
 const getApprovalList = (req, res) => {
-  const { lead, value, leaderOf } = req.body;
+  const { lead, value, leaderOf, status } = req.body;
   const allowedLeader = {
     division: 'account.division',
     subdivision: 'account.subdivision'
@@ -19,18 +19,20 @@ const getApprovalList = (req, res) => {
   const placeholders = lead.map(() => '?').join(', ');
 
   const sql = `
-    SELECT generatedpdf.path, generatedpdf.status, form.id, form.title,
-           part.text AS part, account.fullname, generatedpdf.id AS pdfId
+    SELECT generatedpdf.path, form.id, form.title,
+           part.text AS part, account.fullname, generatedpdf.id AS pdfId, form.title
     FROM generatedpdf
     JOIN form ON form.id = generatedpdf.formID
     JOIN part ON form.id = part.formID
     JOIN account ON account.id = generatedpdf.userID
     WHERE ${column} = ?
       AND account.lead IN (${placeholders})
+      AND generatedpdf.status = ?
     ORDER BY generatedpdf.id ASC;
   `;
 
-  const params = [value, ...lead];
+  const params = [value, ...lead, status];
+  console.log(params)
 
   db.query(sql, params, (err, result) => {
     if (err) {
