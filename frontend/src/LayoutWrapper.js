@@ -21,6 +21,13 @@ function LayoutWrapper() {
 
   const hideNavbarOn = ['/'];
   const shouldHideNavbar = hideNavbarOn.includes(location.pathname);
+  // const hideNavbarOn = ['/', '/pdfPreviewer'];
+
+  // const shouldHideNavbar = () => {
+  //   if (location.pathname === '/') return true;
+  //   if (location.pathname.startsWith('/pdfPreviewer')) return true;
+  //   return false;
+  // };
 
   
   useEffect(() => {
@@ -55,7 +62,7 @@ function LayoutWrapper() {
         <Route path="/formList" element={<FormList />} />
 
         <Route path="/approvalList" element={<ApprovalList />} />
-        <Route path="/pdfPreviewer/:folder/:pdfName" element={<PDFViewer />} />
+        <Route path="/pdfPreviewer/:uploads/:folder/:pdfName" element={<PDFViewer />} />
       </Routes>
     </>
   );

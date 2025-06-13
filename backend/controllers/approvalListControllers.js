@@ -20,7 +20,7 @@ const getApprovalList = (req, res) => {
 
   const sql = `
     SELECT generatedpdf.path, generatedpdf.status, form.id, form.title,
-           part.text AS part, account.fullname
+           part.text AS part, account.fullname, generatedpdf.id AS pdfId
     FROM generatedpdf
     JOIN form ON form.id = generatedpdf.formID
     JOIN part ON form.id = part.formID

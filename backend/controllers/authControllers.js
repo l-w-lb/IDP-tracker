@@ -8,7 +8,10 @@ const checkLogin = (req, res) => {
       loggedIn: true,
       username: req.session.user.username,
       role: req.session.user.role,
-      id: req.session.user.id
+      id: req.session.user.id,
+      lead: req.session.user.lead,
+      division: req.session.user.division,
+      subdivision: req.session.user.subdivision
     });
   } else {
     res.json({ loggedIn: false });

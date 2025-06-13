@@ -103,8 +103,23 @@ const deletePdfPath = (req, res) => {
   });
 };
 
+const updatePdfStatus = (req, res) => {
+  const { status, pdfID } = req.body;
+  
+  const sql = `UPDATE generatedpdf
+    SET status = ?
+    WHERE id = ?;
+  `;
+
+  db.query(sql, [status, pdfID], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+};
+
 module.exports = {
   genPDF,
   uploadPDF,
-  deletePdfPath
+  deletePdfPath,
+  updatePdfStatus
 };

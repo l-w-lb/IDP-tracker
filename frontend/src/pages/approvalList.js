@@ -5,11 +5,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { fetchApprovalList } from '../services/approvalListServices.js';
-// import PdfPreview from './PDFViewer.js';
 
 function ApprovalList() {
     const { user } = useUser();
-    console.log(user)
+    // console.log(user)
 
     const [approvalList, setApprovalList] = useState([]);
 
@@ -51,7 +50,8 @@ function ApprovalList() {
                     <th scope="col">pdf</th>
                     </tr>
                 </thead>
-                {approvalList.map((list, index) => (
+                {approvalList.map((list, index) => {
+                  return (
                     <tbody key={index}>
                         <tr>
                         <th scope="row">{index+1}</th>
@@ -60,20 +60,21 @@ function ApprovalList() {
                           {list.part ? `${list.title}/${list.part}` : list.title}
                         </td>
                         <td>{list.status}</td>
-                        <td className="ellipsis" title={list.path}>
-                          <a
-                          href={`http://localhost:3000/pdfPreviewer${list.path}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <i class="bi bi-box-arrow-right"></i>
-                          {/* {list.path} */}
-                        </a>
-
+                        <td className="ellipsis" title={list.path}>        
+                          <Link
+                            to={{
+                              pathname: `/pdfPreviewer${list.path}`,
+                            }}
+                            state={{ pdfId: list.pdfId }}
+                            // target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <i className="bi bi-box-arrow-right"></i>
+                          </Link>
                         </td>
                         </tr>
                     </tbody>
-                ))}
+                )})}
             </table>
         </div>
         

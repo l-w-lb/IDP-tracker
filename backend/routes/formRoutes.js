@@ -28,11 +28,12 @@ router.post('/get-form-title-description', formController.getFormTitleDescriptio
 router.post('/get-part-topic-question', formController.getPartTopicQuestion);
 router.post('/insert-user-answer', formController.insertUserAnswer);
 router.post('/get-user-answer', formController.getUserAnswer);
-router.post('/generate-pdf',PDFcontrollers.genPDF);
-router.post('/upload-pdf', upload.single('pdf'), PDFcontrollers.uploadPDF);
 router.post('/get-special-question',formController.getSpecialQuestion);
 router.post('/insert-special-answer',formController.insertSpecialAnswer);
 router.post('/insert-new-datalist',formController.insertNewDatalist);
+
+router.post('/generate-pdf',PDFcontrollers.genPDF);
+router.post('/upload-pdf', upload.single('pdf'), PDFcontrollers.uploadPDF);
 router.post('/delete-pdf-path',PDFcontrollers.deletePdfPath);
 
 module.exports = router;

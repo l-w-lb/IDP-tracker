@@ -12,3 +12,11 @@ export const fetchApprovalList = async (lead, value, leaderOf) => {
         )
             
     };
+
+export const updatePdfStatus = async (status, pdfID) => {
+    console.log(status, pdfID)
+        const res = await axios.post(`${approvalListRoutes}/update-pdf-status`, {
+            status: status, 
+            pdfID: pdfID
+        });            
+    };
