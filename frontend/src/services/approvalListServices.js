@@ -17,6 +17,7 @@ export const fetchApprovalList = async (lead, value, leaderOf, status, hr) => {
     };
 
 export const updatePdfStatus = async (status, path, pdfID) => {
+    console.log('ok')
         const res = await axios.post(`${approvalListRoutes}/update-pdf-status`, {
             status: status, 
             pdfID: pdfID,

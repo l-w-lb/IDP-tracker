@@ -34,18 +34,87 @@ const genPDF = (req, res) => {
   doc.registerFont('Sarabun-Thin', fontPathThin);
 
   doc.pipe(writeStream);
+
+  // part
+  const foundItem = data.find(item => item.id === partID);
+  doc
+      .font('Sarabun-Bold')
+      .fontSize(16)
+      .text(`${foundItem.part}`, { align: 'center' })
+
+  doc
+      .font('Sarabun-Bold')
+      .fontSize(16)
+      .text(`${foundItem.description}`, { align: 'center' })
+
   data.map((data, dataIndex) => {
-    doc.font('Sarabun-Bold').text(`${data.part}`);
+
+    // topic
     data.topics.map((topic, topicIndex) => {
-      doc.font('Sarabun-Bold').text(`${topic.topic}`);
+      doc
+        .moveDown() 
+        .font('Sarabun-Bold')
+        .fontSize(14)
+        .text(`${topic.topic}`);
+
+      // question
       topic.questions.map((question, questionIndex) => {
-        doc.font('Sarabun-Regular').text(`${question.question}`);
-        question.answer.map((ans, ansIndex) => {
-          doc.font('Sarabun-Thin').text(`${ans.answer}`);
+        doc
+          .moveDown(0.3)
+          .font('Sarabun-Regular')
+          .fontSize(12)
+          .text(`${question.question}`);
+
+        // answer
+        question.answer.length === 0 
+          ? doc
+              .font('Sarabun-Thin')
+              .fontSize(11)
+              .text('-')
+          : question.answer.map((ans, ansIndex) => {
+            doc
+              .font('Sarabun-Thin')
+              .fontSize(11)
+              .text(`${ans.answer}`);
+              // .text(ans.answer === '-' ? '-' : `- ${ans.answer}`);
+          })
+      })
+
+      topic.children.map((child, childIndex) => {
+        console.log(child)
+        doc
+        .moveDown() 
+        .font('Sarabun-Bold')
+        .fontSize(14)
+        .text(`${child.topic}`);
+
+        child.questions.map((question, questionIndex) => {
+          doc
+            .moveDown(0.3)
+            .font('Sarabun-Regular')
+            .fontSize(12)
+            .text(`${question.question}`);
+
+          // answer
+          question.answer.length === 0 
+            ? doc
+                .font('Sarabun-Thin')
+                .fontSize(11)
+                .text('-')
+            : question.answer.map((ans, ansIndex) => {
+              doc
+                .font('Sarabun-Thin')
+                .fontSize(11)
+                .text(`${ans.answer}`);
+                // .text(ans.answer === '-' ? '-' : `- ${ans.answer}`);
+            })
         })
       })
     })
+
+    // doc.moveDown(1)
   })
+
   doc.font('Sarabun-Thin').text(``);
   doc.end();
 
@@ -66,7 +135,7 @@ const genPDF = (req, res) => {
           console.error('❌ DB insert error:', err);
           return res.status(500).json({ error: 'Failed to insert into DB' });
         }
-
+        // console.log(result)
         res.json({ message: 'PDF saved', fileUrl });
       }
     );
@@ -106,6 +175,7 @@ const deletePdfPath = (req, res) => {
 
 const updatePdfStatus = (req, res) => {
   const { status, path, pdfID } = req.body;
+  console.log(status, path, pdfID)
   
   const sql = `UPDATE generatedpdf
     SET status = ?, path = ?
@@ -121,7 +191,7 @@ const updatePdfStatus = (req, res) => {
 const saveEditedPdf = async (req, res) => {
   try {
     const { base64Pdf, fileName, status, pdfID } = req.body;
-    // console.log(status, pdfID)
+    console.log(status, pdfID)
 
     const pdfBytes = Buffer.from(base64Pdf, 'base64');
 

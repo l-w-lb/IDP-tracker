@@ -52,7 +52,11 @@ function FormList() {
                         <th scope="row">{index+1}</th>
                         <td>
                             <Link 
-                              to={`/form/${list.title}`} 
+                              // to={`/form/${list.title}`} 
+                              to={{
+                                pathname: `/form/${list.title}`,
+                              }}
+                              state={{ pdfId: list.pdfID }}
                               // className="ellipsis"
                               className="form-link ellipsis"
                               title={list.part ? `${list.title}/${list.part}` : list.title}
@@ -71,13 +75,15 @@ function FormList() {
                         </td>
                         <td className="ellipsis" title={list.path}>
                           {list.path ? (
-                            <a
-                              href={`${BASE_URL}${list.path}`}
-                              target="_blank"
+                            <Link
+                             to={{
+                                pathname: `/pdfEditorUser${list.path}`,
+                              }}
+                              state={{ pdfId: list.pdfID, pdfTitle: list.title }}
                               rel="noopener noreferrer"
                             >
                               <i className="bi bi-box-arrow-right"></i>
-                            </a>
+                            </Link>
                           ) : (
                             '-'
                           )}

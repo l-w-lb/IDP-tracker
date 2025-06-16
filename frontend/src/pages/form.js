@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { useUser } from '../context/userContext.js';
 import { useFormContext } from '../context/FormContext.js';
@@ -16,12 +16,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { fetchTitleDescription, fetchformData, insertUserAnswer, generatePDF, uploadPDF, fetchSpecialQuestion, insertSpecialAnswer, insertNewDatalist, deletePdfPath } from '../services/formServices.js';
 
 function Form() {
+  const location = useLocation();
+
   const { user } = useUser();
   const { form, setForm } = useFormContext();
+  const { pdfId } = location.state || {};
   const accountID = user.id;
   const id = form.formID;
   const partID = form.partID
-  // console.log(form)
+  console.log(pdfId)
 
   const navigate = useNavigate();
 
@@ -84,16 +87,17 @@ function Form() {
   };
 
   const genPDF = async (formTitle, formID, userID) => {
-    console.log('pdf generated');
       try {
-        let status = 'รอการอนุมัติจากผอ.กลุ่ม'
-        if (user.lead === 'ผอ.กลุ่ม') {
-          status = 'รอการอนุมัติจากผอ.กอง'
-        }
-        if (user.lead === 'ผอ.กอง') {
-          status = 'รอการอนุมัติจากฝ่ายบุคคล'
-        }
+        // let status = 'รอการอนุมัติจากผอ.กลุ่ม'
+        // if (user.lead === 'ผอ.กลุ่ม') {
+        //   status = 'รอการอนุมัติจากผอ.กอง'
+        // }
+        // if (user.lead === 'ผอ.กอง') {
+        //   status = 'รอการอนุมัติจากฝ่ายบุคคล'
+        // }
+        const status = 'ยังไม่ได้ลงลายเซ็นต์'
         const genPDF = await generatePDF(formTitle, formID, status, userID, partID, formData);
+        return genPDF.fileUrl
       } catch (err) {
         console.error('fail to generates PDF:', err.message);
       }
@@ -278,7 +282,7 @@ function Form() {
                     const found = question.answer.find(
                       a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
                     );
-                    console.log(found)
+                    
                     if (!found) {
                       hasAnyAnswer = false;
                     }
@@ -356,9 +360,12 @@ function Form() {
         await insertNewDatalist(result[1]);
       }
       
-      await genPDF(formTitle,id,user.id);
+      const pdfUrl = await genPDF(formTitle,id,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
-      navigate('/formList');
+      // navigate('/formList');
+      navigate(`/pdfEditorUser${pdfUrl}`, {
+        state: { pdfId: pdfId, pdfTitle: formTitle}
+      });
   };
 
   const formatAns = (topic) => {

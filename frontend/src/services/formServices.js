@@ -142,6 +142,7 @@ export const generatePDF = async (formTitle, formID, status, userID, partID, dat
             status, status,
             partID: partID
         })
+        return res.data
       } catch (err) {
         console.error('fail to generate PDF:', err.message);
       }

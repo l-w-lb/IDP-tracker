@@ -8,7 +8,8 @@ const getForm = (req, res) => {
         generatedpdf.status, 
         form.id AS formID,
         part.text AS part,
-        part.id AS partID
+        part.id AS partID,
+        generatedpdf.id AS pdfID
       FROM part
       LEFT JOIN generatedpdf 
         ON part.id = generatedpdf.partID 
