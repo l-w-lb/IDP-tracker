@@ -32,7 +32,7 @@ const getApprovalList = (req, res) => {
            part.text AS part, account.fullname, generatedpdf.id AS pdfId, form.title
     FROM generatedpdf
     JOIN form ON form.id = generatedpdf.formID
-    JOIN part ON form.id = part.formID
+    JOIN part ON part.id = generatedpdf.partID
     JOIN account ON account.id = generatedpdf.userID
     WHERE ${column} = ?
       AND account.lead IN (${placeholders})

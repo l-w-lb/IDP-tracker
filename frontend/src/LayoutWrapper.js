@@ -11,8 +11,7 @@ import Form from './pages/form.js'
 import Login from './pages/login.js';
 import FormList from './pages/formList.js';
 import ApprovalList from './pages/approvalList.js';
-import PDFViewer from './components/PDFApproveViewer.js';
-import PDFEditor from './components/PDFEditor.js';
+import PDFEditor from './components/pdfEditor.js';
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -61,7 +60,6 @@ function LayoutWrapper() {
         <Route path="/formList" element={<FormList />} />
 
         <Route path="/approvalList" element={<ApprovalList />} />
-        <Route path="/pdfPreviewer/:uploads/:folder/:pdfName" element={<PDFViewer />} />
         <Route path="/pdfEditor/:uploads/:folder/:pdfName" element={<PDFEditor />} />
       </Routes>
     </>

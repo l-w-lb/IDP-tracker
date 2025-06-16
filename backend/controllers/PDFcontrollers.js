@@ -6,8 +6,8 @@ const db = require('../db');
 const { PDFDocument  } = require('pdf-lib');
 
 const genPDF = (req, res) => {
-  const {formTitle, status, userID, formID, data} = req.body;
-  // console.log(formTitle, username, userID, formID, data)
+  const {formTitle, status, userID, formID, partID, data} = req.body;
+  console.log(formTitle, status, userID, formID, partID, data)
 
   const dir = path.join(__dirname, '..', 'uploads', 'generatedPdf');
 
@@ -54,13 +54,13 @@ const genPDF = (req, res) => {
     console.log('📄 PDF saved at:', fileUrl);
 
     db.query(
-      `INSERT INTO generatedpdf (userID, formID, status, path)
-       VALUES (?, ?, ?, ?)
+      `INSERT INTO generatedpdf (userID, formID, partID, status, path)
+       VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE
          status = VALUES(status),
          path = VALUES(path)
       `,
-      [userID, formID, status, fileUrl],
+      [userID, formID, partID, status, fileUrl],
       (err, result) => {
         if (err) {
           console.error('❌ DB insert error:', err);
@@ -120,8 +120,8 @@ const updatePdfStatus = (req, res) => {
 
 const saveEditedPdf = async (req, res) => {
   try {
-    const { base64Pdf, fileName } = req.body;
-    console.log('base64Pdf, fileName')
+    const { base64Pdf, fileName, status, pdfID } = req.body;
+    // console.log(status, pdfID)
 
     const pdfBytes = Buffer.from(base64Pdf, 'base64');
 
@@ -133,6 +133,16 @@ const saveEditedPdf = async (req, res) => {
     console.log(savePath)
 
     fs.writeFileSync(savePath, editedPdfBytes);
+
+    // const sql = `UPDATE generatedpdf
+    //   SET status = ?, path = ?
+    //   WHERE id = ?;
+    // `;
+
+    // db.query(sql, [status, path, pdfID], (err, result) => {
+    //   if (err) throw err;
+    //   res.json(result);
+    // });
 
     res.json({ success: true, message: 'PDF saved', path: savePath });
   } catch (error) {

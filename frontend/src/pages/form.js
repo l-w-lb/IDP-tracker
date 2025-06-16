@@ -93,7 +93,7 @@ function Form() {
         if (user.lead === 'ผอ.กอง') {
           status = 'รอการอนุมัติจากฝ่ายบุคคล'
         }
-        const genPDF = await generatePDF(formTitle, formID, status, userID, formData);
+        const genPDF = await generatePDF(formTitle, formID, status, userID, partID, formData);
       } catch (err) {
         console.error('fail to generates PDF:', err.message);
       }
@@ -254,11 +254,11 @@ function Form() {
       questions.map((question, questionIndex) => {
         question.answer.map((ans, ansIndex) => {
           if (ans.groupInstance === groupInstance && ans.subInstance === subInstance) {
-            // if (isChild) {
-            //   updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer[ansIndex].answer = '';
-            // } else {
-            //   updated[partIndex].topics[topicIndex].questions[questionIndex].answer[ansIndex].answer = '';
-            // }
+            if (isChild) {
+              updated[partIndex].topics[topicIndex].children[childIndex].questions[questionIndex].answer[ansIndex].answer = '';
+            } else {
+              updated[partIndex].topics[topicIndex].questions[questionIndex].answer[ansIndex].answer = '';
+            }
           }
         })
       })
@@ -266,7 +266,7 @@ function Form() {
     })
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     for (const section of formData) {
       for (const topic of section.topics) {
           for (const question of topic.questions) {
@@ -278,7 +278,7 @@ function Form() {
                     const found = question.answer.find(
                       a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
                     );
-
+                    console.log(found)
                     if (!found) {
                       hasAnyAnswer = false;
                     }
@@ -351,12 +351,12 @@ function Form() {
 
       handleSpecialquestion(result[0])
       console.log('ข้อมูลที่เก็บลงดาต้าเบส', result)
-      insertAnswer(result[0]);
+      await insertAnswer(result[0]);
       if (result[1].length !== 0) {
-        insertNewDatalist(result[1]);
+        await insertNewDatalist(result[1]);
       }
       
-      genPDF(formTitle,id,user.id);
+      await genPDF(formTitle,id,user.id);
       // alert("เก็บข้อมูลลงดาต้าเบสแล้ว");
       navigate('/formList');
   };

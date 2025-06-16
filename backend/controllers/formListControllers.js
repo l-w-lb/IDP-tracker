@@ -9,11 +9,11 @@ const getForm = (req, res) => {
         form.id AS formID,
         part.text AS part,
         part.id AS partID
-      FROM form
+      FROM part
       LEFT JOIN generatedpdf 
-        ON form.id = generatedpdf.formID 
+        ON part.id = generatedpdf.partID 
         AND generatedpdf.userID = ?
-      JOIN part ON form.id = part.formID
+      JOIN form ON form.id = part.formID
 
   `;
 

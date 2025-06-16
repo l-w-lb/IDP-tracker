@@ -28,7 +28,7 @@ function Navbar() {
         <div className="navbar-center" onClick={() => navigate('/formList')} style={{ cursor: 'pointer' }}>
           รายการแบบสอบถาม
         </div>
-        {(user.lead === 'ผอ.กอง' || user.lead === 'ผอ.กลุ่ม') &&
+        {(user.lead === 'ผอ.กอง' || user.lead === 'ผอ.กลุ่ม' || user.role === 'hr') &&
           <div className="navbar-center" onClick={() => navigate('/approvalList')}  style={{ cursor: 'pointer' }}>
             รายการการอนุมัติ
           </div>

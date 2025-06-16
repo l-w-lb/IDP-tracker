@@ -33,3 +33,31 @@
   font-weight: bold;
   margin: 0 10px;
 } */
+
+.btn {
+  font-size: 20px;
+  color: #fff;
+  border: none;            
+  border-radius: 8px;      
+  padding: 8px 16px; 
+  cursor: pointer; 
+  transition: background-color 0.3s ease;
+}
+
+.decline-btn {
+  background-color: #ff0000;
+}
+
+.decline-btn:hover {
+  background-color: #b70000;
+  color: #fff;
+}
+
+.approve-btn {
+  background-color: #28a745;
+}
+
+.approve-btn:hover {
+  background-color: #1a8332;
+  color: #fff;
+}

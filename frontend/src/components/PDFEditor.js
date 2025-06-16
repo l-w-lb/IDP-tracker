@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
 import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
@@ -59,7 +59,7 @@ const PDFEditor = () => {
 
   const handleApproveClick = () => {
     downloadPDF()
-    navigate('/approvalList');
+    // navigate('/approvalList');
     // window.location.reload();
   };
 
@@ -75,26 +75,60 @@ const PDFEditor = () => {
     const originalPdfBytes = await pdfDoc.getData();
     const editedPdf = await PDFDocument.load(originalPdfBytes);
 
-    const updatedPdfBytes = await editedPdf.save();
+    const pages = editedPdf.getPages();
 
-    const base64Pdf = btoa(
-      new Uint8Array(updatedPdfBytes)
-        .reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
-    console.log(pdfTitle)
-    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
-    const savePdf = await saveEditedPdf(base64Pdf, `${newFileName}`);
+    // วาดเส้นที่วาดไว้บนแต่ละหน้า
+    for (let i = 0; i < pages.length; i++) {
+      const pageNumber = i + 1;
+      const page = pages[i];
 
-    let status = 'รอการอนุมัติจากผอ.กอง'
-    if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล'
+      const paths = drawings[pageNumber];
+      if (!paths) continue;
+
+      // คุณอาจต้องแปลง scale จาก canvas เป็นขนาด PDF จริง (ถ้าขนาดไม่ตรงกัน)
+      // สมมติว่าคุณใช้ scale 1.5 ในการแสดง PDF
+      const scaleFactor = 1 / pageScale; // เพื่อแปลงกลับไปขนาดจริงใน PDF
+
+      paths.forEach(path => {
+        for (let j = 0; j < path.length - 1; j++) {
+          const start = path[j];
+          const end = path[j + 1];
+
+          page.drawLine({
+            start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
+            end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
+            thickness: 2,
+            color: rgb(1, 0, 0), // แดง
+            lineCap: 'Round',
+          });
+        }
+      });
+      
     }
-    if (user.role === 'hr') {
-      console.log('k')
-      status = 'อนุมัติ'
-    }
-    updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId);
-  };
+
+  const updatedPdfBytes = await editedPdf.save();
+    
+  // แปลงเป็น base64 (เหมือนที่คุณทำ)
+  const base64Pdf = btoa(
+    new Uint8Array(updatedPdfBytes)
+      .reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
+  
+  const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+  // ... ส่วนที่เหลือเหมือนเดิม เช่น saveEditedPdf, updatePdfStatus, navigate
+  let status = 'รอการอนุมัติจากผอ.กอง'
+  if (user.lead === 'ผอ.กอง') {
+    status = 'รอการอนุมัติจากฝ่ายบุคคล'
+  }
+  if (user.role === 'hr') {
+    status = 'อนุมัติ'
+  }
+
+  const savePdf = await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
+  updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId);
+  navigate('/approvalList')
+
+};
 
 
 
@@ -112,8 +146,8 @@ const PDFEditor = () => {
       ))}
 
       <div>
-        <button style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
-        <button onClick={handleDeclineClick}>ไม่อนุมัติ</button>
+        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
+        <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
         {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
       </div>
     </div>
@@ -160,7 +194,7 @@ const PDFPage = ({ pdf, pageNumber, drawings, onAddDrawing, scale }) => {
       // วาดเส้นที่มีอยู่ (drawings)
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'red';
-      ctx.lineCap = 'round';
+      ctx.lineCap = 'Round';
 
       drawings.forEach(path => {
         ctx.beginPath();
@@ -202,7 +236,7 @@ const PDFPage = ({ pdf, pageNumber, drawings, onAddDrawing, scale }) => {
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'red';
-    ctx.lineCap = 'round';
+    ctx.lineCap = 'Round';
 
     ctx.lineTo(x, y);
     ctx.stroke();

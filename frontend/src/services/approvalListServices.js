@@ -24,9 +24,11 @@ export const updatePdfStatus = async (status, path, pdfID) => {
         });            
     };
 
-export const saveEditedPdf = async (base64Pdf, fileName) => {
+export const saveEditedPdf = async (base64Pdf, fileName, status, pdfID) => {
         const res = await axios.post(`${approvalListRoutes}/save-edited-pdf`, {
             base64Pdf: base64Pdf, 
-            fileName: fileName
+            fileName: fileName,
+            status: status,
+            pdfID: pdfID
         });            
     };
