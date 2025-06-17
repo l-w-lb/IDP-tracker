@@ -101,27 +101,28 @@ const PDFEditorUser = () => {
 
 
   const handleApproveClick = async () => {
-    let status = 'รอการอนุมัติจากผอ.กลุ่ม'
-    if (user.lead === 'ผอ.กลุ่ม') {
-      status = 'รอการอนุมัติจากผอ.กอง'
-    }
+    let status = 'รอการอนุมัติจากผอ.กอง';
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล'
+      status = 'รอการอนุมัติจากฝ่ายบุคคล';
+    }
+    if (user.role === 'hr') {
+      status = 'อนุมัติ';
     }
 
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
     await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
     await downloadPDF(status, newFileName); 
-    // console.log(newFileName)
 
-    navigate('/formList'); 
+    navigate('/approvalList'); 
   };
 
 
-  const handleDeclineClick = () => {
-    navigate('/formList');
+  const handleDeclineClick = async () => {
+    updatePdfStatus('ไม่อนุมัติ', `/uploads/${folder}/${pdfName}`, pdfId);
+    navigate('/approvalList');
     // window.location.reload();
   };
+  
 
   const downloadPDF = async (status, newFileName) => {
     if (!pdfDoc) return;
@@ -218,6 +219,7 @@ const handleDownloadClick = async () => {
     URL.revokeObjectURL(url);
   };
 
+  
 
 
   return (
@@ -241,6 +243,7 @@ const handleDownloadClick = async () => {
 
 
         <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
+        <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>อัพโหลด PDF</button>
         <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>ดาวน์โหลด PDF</button>
         <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
       </div>

@@ -218,6 +218,7 @@ const genPDF = (req, res) => {
 const uploadPDF = (req, res) => {
   const { fileName, time } = req.body;
   const file = req.file;
+  console.log('foo')
   if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }

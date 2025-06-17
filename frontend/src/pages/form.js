@@ -24,7 +24,7 @@ function Form() {
   const accountID = user.id;
   const id = form.formID;
   const partID = form.partID
-  console.log(pdfId)
+  // console.log(pdfId)
 
   const navigate = useNavigate();
 
@@ -310,6 +310,17 @@ function Form() {
                       const found = question.answer.find(
                         a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
                       );
+                      if (!found) {
+                        hasAnyAnswer = false;
+                      }
+                    }
+                  } else if (topic.type === 'dynamicQuestion' && topic.questions[0].answer[0].answer === child.id) {
+                    const min = topic.topicDetail?.min;
+                    for (let i = 0; i < min; i++) {
+                      const found = question.answer.find(
+                        a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                      );
+                      
                       if (!found) {
                         hasAnyAnswer = false;
                       }

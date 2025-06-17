@@ -4,7 +4,7 @@ import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
-import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
+import { updatePdfStatus, saveEditedPdf, uploadPDF } from '../services/approvalListServices.js';
 import { useUser } from '../context/userContext.js';
 
 import '../styles/pdfEditorUser.css'
@@ -17,7 +17,7 @@ const PDFEditorUser = () => {
   const { folder, pdfName } = useParams();
   const { pdfId, pdfTitle } = location.state || {};
   const { user } = useUser();
-  console.log('123',pdfId, pdfTitle)
+  const fileInputRef = useRef(null);
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [numPages, setNumPages] = useState(0);
@@ -167,55 +167,83 @@ const PDFEditorUser = () => {
     await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
   };
 
-const handleDownloadClick = async () => {
-    if (!pdfDoc) return;
+  const handleDownloadClick = async () => {
+      if (!pdfDoc) return;
 
-    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+      const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
 
-    const originalPdfBytes = await pdfDoc.getData();
-    const editedPdf = await PDFDocument.load(originalPdfBytes);
+      const originalPdfBytes = await pdfDoc.getData();
+      const editedPdf = await PDFDocument.load(originalPdfBytes);
 
-    const pages = editedPdf.getPages();
+      const pages = editedPdf.getPages();
 
-    for (let i = 0; i < pages.length; i++) {
-      const pageNumber = i + 1;
-      const page = pages[i];
+      for (let i = 0; i < pages.length; i++) {
+        const pageNumber = i + 1;
+        const page = pages[i];
 
-      const paths = drawings[pageNumber];
-      if (!paths) continue;
+        const paths = drawings[pageNumber];
+        if (!paths) continue;
 
-      const scaleFactor = 1 / pageScale;
+        const scaleFactor = 1 / pageScale;
 
-      paths.forEach(path => {
-        for (let j = 0; j < path.length - 1; j++) {
-          const start = path[j];
-          const end = path[j + 1];
+        paths.forEach(path => {
+          for (let j = 0; j < path.length - 1; j++) {
+            const start = path[j];
+            const end = path[j + 1];
 
-          page.drawLine({
-            start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
-            end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
-            thickness: 2,
-            color: rgb(0, 0, 0),
-            lineCap: 'Round',
-          });
-        }
-      });
+            page.drawLine({
+              start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
+              end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
+              thickness: 2,
+              color: rgb(0, 0, 0),
+              lineCap: 'Round',
+            });
+          }
+        });
+      }
+
+      const updatedPdfBytes = await editedPdf.save();
+
+      const blob = new Blob([updatedPdfBytes], { type: 'application/pdf' });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = newFileName;
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click(); 
+  };
+
+  const handleUploadClick = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const time = Date.now()
+    const fileUrl = `/uploads/generatedpdf/${pdfTitle}_${time}`;
+
+    let status = 'รอการอนุมัติจากผอ.กลุ่ม'
+    if (user.lead === 'ผอ.กลุ่ม') {
+      status = 'รอการอนุมัติจากผอ.กอง'
+    }
+    if (user.lead === 'ผอ.กอง') {
+      status = 'รอการอนุมัติจากฝ่ายบุคคล'
     }
 
-    const updatedPdfBytes = await editedPdf.save();
-
-    const blob = new Blob([updatedPdfBytes], { type: 'application/pdf' });
-
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = newFileName;
-    document.body.appendChild(a);
-    a.click();
-
-    a.remove();
-    URL.revokeObjectURL(url);
+    try {
+      await uploadPDF(fileUrl, file, time);
+      await updatePdfStatus(status, fileUrl, pdfId)
+      navigate('/formList'); 
+    } catch (err) {
+      console.error('fail to generate PDF:', err.message);
+    }
   };
 
 
@@ -242,6 +270,15 @@ const handleDownloadClick = async () => {
         </div>
 
         <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>ส่ง</button>
+        <input
+          type="file"
+          accept="application/pdf"
+          ref={fileInputRef}
+          onChange={handleUploadClick}
+          style={{ display: 'none' }}
+        />
+        <button className="download-btn btn" onClick={handleButtonClick} style={{ marginRight: '20px' }}>อัพโหลด PDF</button>
+        {/* <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleUploadClick}>อัพโหลด PDF</button> */}
         <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>ดาวน์โหลด PDF</button>
         <button className='decline-btn btn' onClick={handleDeclineClick}>ยกเลิก</button>
       </div>

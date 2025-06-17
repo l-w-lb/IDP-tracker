@@ -41,3 +41,15 @@ export const updatePdfComment = async (comment, pdfID, accountID) => {
             accountID
         });            
     };
+
+export const uploadPDF = async (fileName, file, time) => {
+      try {
+        const formData = new FormData();
+        formData.append('pdf', file);
+        formData.append('fileName', fileName);
+        formData.append('time', time);
+        const res = await axios.post(`${approvalListRoutes}/upload-pdf`, formData)
+      } catch (err) {
+        console.error('fail to generate PDF:', err.message);
+      }
+}
