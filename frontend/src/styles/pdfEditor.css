@@ -66,6 +66,15 @@
   color: #fff;
 }
 
+.download-btn {
+  background-color: #0961bf;
+}
+
+.download-btn:hover {
+  background-color: #09519e;
+  color: #fff;
+}
+
 .floating-buttons {
   position: fixed;
   bottom: 20px;

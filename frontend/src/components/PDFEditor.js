@@ -7,7 +7,7 @@ import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
 import { useUser } from '../context/userContext.js';
 
-import '../styles/pdfEditorUser.css'
+import '../styles/pdfEditor.css'
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
