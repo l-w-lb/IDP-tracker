@@ -24,7 +24,7 @@ function Form() {
   const accountID = user.id;
   const id = form.formID;
   const partID = form.partID
-  console.log(pdfId)
+  // console.log(pdfId)
 
   const navigate = useNavigate();
 
@@ -171,9 +171,10 @@ function Form() {
       ? formData[partIndex]?.topics[topicIndex]?.children[childIndex]?.topicDetail?.currentIndex
       : formData[partIndex]?.topics[topicIndex]?.topicDetail?.currentIndex || 0;
     currentValue = currentValue + action;
-    if (currentIndex + 1 >= currentValue) {
-      currentIndex = currentIndex - 1;
+    if (currentIndex + 1 > currentValue) {
+      currentIndex = currentValue - 1;
     }
+    
 
     if (action === -1) {
       formData[partIndex].topics[topicIndex].questions.map((question, questionIndex) => {
@@ -304,6 +305,9 @@ function Form() {
               for (const question of child.questions) {
                 if (question.required) {
                   let hasAnyAnswer = true;
+                  if (topic.questions[0].answer[0].anwer === child.id) {
+                    console.log('ok')
+                  }
                   if (child.type === 'multipleAnswer' || child.type === 'dynamicQuestion') {
                     const min = topic.topicDetail?.min;
                     for (let i = 0; i < min; i++) {
