@@ -760,7 +760,7 @@ function Form() {
               <div className="mb-1 mt-1">
                 {question.question}
                 {(
-                  topicDetail.currentIndex < topicDetail.min && Boolean(question.required)) && (
+                  (topicDetail.currentIndex < topicDetail.min) && Boolean(question.required)) && (
                   <span style={{ color: 'red' }}> *</span>
                 )}
               </div>
@@ -976,8 +976,6 @@ function Form() {
     childTopicIndex,
     isChild
   }) {
-    // handleSpecialquestion('ss')
-
     if (question.questionDetail?.sum !== undefined && question.questionDetail?.sum !== null) {
       const total = question.type && totalTime(question.answer)
               if (isChild) {
@@ -987,13 +985,18 @@ function Form() {
       }
     }
 
+    const topicDetail = formData[formDataIndex].topics[topicElementIndex].topicDetail
+
     return (
       <>
         {question.question}
         {question.questionDetail?.sum !== undefined && question.questionDetail?.sum !== null && (
           <span className="show-sum">Total: {question.questionDetail.sum}</span>
         )}
-        {Boolean(question.required) && <span style={{ color: 'red' }}> *</span>}
+        {(
+          (topicDetail.currentIndex < topicDetail.min) && Boolean(question.required)) && (
+          <span style={{ color: 'red' }}> *</span>
+        )}
       </>
     );
   }
