@@ -72,18 +72,10 @@ function ApprovalList() {
                   <td className="title-ellipsis" title={list.part ? `${list.title}/${list.part}` : list.title}>
                     {list.part ? `${list.title}/${list.part}` : list.title}
                   </td>
-                  {/* <td style={{
-                    color:
-                      list.status === 'อนุมัติ' ? 'green' :
-                      list.status === 'ไม่อนุมัติ' ? 'red' :
-                      'blue'
-                  }}>
-                    {list.status}
-                  </td> */}
                   <td title={list.path}>
                     <Link
                       to={{
-                        pathname: `/pdfEditor${list.path}`,
+                        pathname: `/pdfEditorUser${list.path}`,
                       }}
                       state={{ pdfId: list.pdfId, pdfTitle: list.title }}
                       // target="_blank"

@@ -35,6 +35,9 @@ const genPDF = (req, res) => {
 
   doc.pipe(writeStream);
 
+  const pageWidth = doc.page.width;
+  const margin = 60;
+
   // part
   const foundItem = data.find(item => item.id === partID);
   doc
@@ -111,9 +114,79 @@ const genPDF = (req, res) => {
         })
       })
     })
-
-    // doc.moveDown(1)
   })
+
+  doc
+    .moveDown(4)
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('ผู้จัดทำแผน: ............................', { align: 'right' })
+    .text('           (.............................)', { align: 'right' })
+    .text('วันที่ .............................', { align: 'right' });
+
+  doc
+    .moveDown(2)
+    .font('Sarabun-Bold')
+    .fontSize(14)
+    .text('ความคิดเห็นของผู้บังคับบัญชาขั้นต้น (ผู้อำนวยการกลุ่มงาน/หัวหน้างาน) / ข้อเสนอแนะเพิ่มเติม:', { align: 'right' })
+  
+  doc
+    .moveDown()
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('..................................................................', { align: 'right' })
+  
+  doc
+    .moveDown(1)
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('ลงนาม: ..............................', { align: 'right' })
+    .text('..............................', { align: 'right' })
+    .text('ตำแหน่ง: ..............................', { align: 'right' })
+    .text('วันที่: ..............................', { align: 'right' })
+  
+  doc
+    .moveDown(2)
+    .font('Sarabun-Bold')
+    .fontSize(14)
+    .text('ความคิดเห็นของผู้บังคับบัญชาเหนือขึ้นไป (ผู้อำนวยการกลุ่มกอง) / ข้อเสนอแนะเพิ่มเติม:', { align: 'right' })
+
+  doc
+    .moveDown()
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('..................................................................', { align: 'right' })
+
+  doc
+    .moveDown(1)
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('ลงนาม: ..............................', { align: 'right' })
+    .text('..............................', { align: 'right' })
+    .text('ตำแหน่ง: ..............................', { align: 'right' })
+    .text('วันที่: ..............................', { align: 'right' })
+
+  doc
+    .moveDown(2)
+    .moveTo(margin, doc.y)             
+    .lineTo(pageWidth - margin, doc.y)  
+    .strokeColor('black')
+    .stroke();
+  
+  doc
+    .moveDown(2)
+    .font('Sarabun-Bold')
+    .fontSize(14)
+    .text('การตรวจสอบและรับรอง', { align: 'right' })
+  
+  doc
+    .moveDown(1)
+    .font('Sarabun-Regular')
+    .fontSize(12)
+    .text('ลงชื่อ: ..............................(เจ้าหน้าที่ กก.กพท./ผู้ตรวจสอบ)', { align: 'right' })
+    .text('(..............................)', { align: 'right' })
+    .text('วันที่: ..............................', { align: 'right' })
+
 
   doc.font('Sarabun-Thin').text(``);
   doc.end();
@@ -191,7 +264,6 @@ const updatePdfStatus = (req, res) => {
 const saveEditedPdf = async (req, res) => {
   try {
     const { base64Pdf, fileName, status, pdfID } = req.body;
-    console.log(status, pdfID)
 
     const pdfBytes = Buffer.from(base64Pdf, 'base64');
 
@@ -204,15 +276,27 @@ const saveEditedPdf = async (req, res) => {
 
     fs.writeFileSync(savePath, editedPdfBytes);
 
-    // const sql = `UPDATE generatedpdf
-    //   SET status = ?, path = ?
-    //   WHERE id = ?;
-    // `;
+    res.json({ success: true, message: 'PDF saved', path: savePath });
+  } catch (error) {
+    console.error('Error saving PDF:', error);
+    res.status(500).json({ success: false, error: 'Failed to save PDF' });
+  }
+};
 
-    // db.query(sql, [status, path, pdfID], (err, result) => {
-    //   if (err) throw err;
-    //   res.json(result);
-    // });
+const downloadEditedPdf = async (req, res) => {
+  try {
+    const { base64Pdf, fileName, status, pdfID } = req.body;
+
+    const pdfBytes = Buffer.from(base64Pdf, 'base64');
+
+    const pdfDoc = await PDFDocument .load(pdfBytes);
+
+    const editedPdfBytes = await pdfDoc.save();
+
+    const savePath = path.join(__dirname, '../uploads/generatedPdf', fileName);
+    console.log(savePath)
+
+    fs.writeFileSync(savePath, editedPdfBytes);
 
     res.json({ success: true, message: 'PDF saved', path: savePath });
   } catch (error) {
@@ -221,11 +305,32 @@ const saveEditedPdf = async (req, res) => {
   }
 };
 
+const updatePdfComment = (req, res) => {
+  const { comment, pdfID, accountID } = req.body;
+
+  const sql = `
+    INSERT INTO comment (comment, generatedpdfID, accountID)
+    VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        comment = VALUES(comment)
+      `;
+
+  db.query(sql, [comment, pdfID, accountID], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Database query error' });
+    }
+    res.json(result);
+  });
+};
+
 
 module.exports = {
   genPDF,
   uploadPDF,
   deletePdfPath,
   updatePdfStatus,
-  saveEditedPdf
+  saveEditedPdf,
+  updatePdfComment,
+  downloadEditedPdf
 };

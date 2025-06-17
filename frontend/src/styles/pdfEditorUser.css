@@ -1,0 +1,72 @@
+.pdf-editor-container {
+  display: flex;
+  flex-direction: column;  /* เรียงจากบนลงล่าง */
+  align-items: center;     /* จัดกึ่งกลางแนวนอน */
+  gap: 10px;               /* เว้นระยะห่างระหว่าง canvas กับปุ่ม */
+  padding: 20px;
+  background-color: #95c6b0; /* ตัวอย่างพื้นหลัง */
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
+}
+
+.pdf-canvas {
+  border: 1px solid black;
+  cursor: crosshair;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  background-color: white;
+}
+/* 
+.navigation-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+
+.navigation-buttons button {
+  margin: 0 5px;
+}
+
+.navigation-buttons span {
+  font-weight: bold;
+  margin: 0 10px;
+} */
+
+.btn {
+  font-size: 20px;
+  color: #fff;
+  border: none;            
+  border-radius: 8px;      
+  padding: 8px 16px; 
+  cursor: pointer; 
+  transition: background-color 0.3s ease;
+}
+
+.decline-btn {
+  background-color: #ff0000;
+}
+
+.decline-btn:hover {
+  background-color: #b70000;
+  color: #fff;
+}
+
+.approve-btn {
+  background-color: #28a745;
+}
+
+.approve-btn:hover {
+  background-color: #1a8332;
+  color: #fff;
+}
+
+.download-btn {
+  background-color: #0961bf;
+}
+
+.download-btn:hover {
+  background-color: #09519e;
+  color: #fff;
+}

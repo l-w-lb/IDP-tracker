@@ -7,7 +7,7 @@ import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
 import { useUser } from '../context/userContext.js';
 
-import '../styles/pdfEditor.css'
+import '../styles/pdfEditorUser.css'
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -17,6 +17,7 @@ const PDFEditor = () => {
   const { folder, pdfName } = useParams();
   const { pdfId, pdfTitle } = location.state || {};
   const { user } = useUser();
+  console.log('123',pdfId, pdfTitle)
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [numPages, setNumPages] = useState(0);
@@ -58,25 +59,25 @@ const PDFEditor = () => {
   };
 
   const handleApproveClick = async () => {
-    let status = 'รอการอนุมัติจากผอ.กอง';
-    if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล';
+    let status = 'รอการอนุมัติจากผอ.กลุ่ม'
+    if (user.lead === 'ผอ.กลุ่ม') {
+      status = 'รอการอนุมัติจากผอ.กอง'
     }
-    if (user.role === 'hr') {
-      status = 'อนุมัติ';
+    if (user.lead === 'ผอ.กอง') {
+      status = 'รอการอนุมัติจากฝ่ายบุคคล'
     }
 
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
     await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
     await downloadPDF(status, newFileName); 
+    console.log(newFileName)
 
-    navigate('/approvalList'); 
+    navigate('/formList'); 
   };
 
 
   const handleDeclineClick = () => {
-    updatePdfStatus('ไม่อนุมัติ', `/uploads/${folder}/${pdfName}`, pdfId);
-    navigate('/approvalList');
+    navigate('/formList');
     // window.location.reload();
   };
 
@@ -120,7 +121,6 @@ const PDFEditor = () => {
     new Uint8Array(updatedPdfBytes)
       .reduce((data, byte) => data + String.fromCharCode(byte), '')
   );
-  
   await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
   
 
@@ -142,8 +142,8 @@ const PDFEditor = () => {
       ))}
 
       <div>
-        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
-        <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
+        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>ส่ง</button>
+        <button className='decline-btn btn' onClick={handleDeclineClick}>ยกเลิก</button>
         {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
       </div>
     </div>

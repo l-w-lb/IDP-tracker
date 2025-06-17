@@ -7,7 +7,7 @@ import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
 import { useUser } from '../context/userContext.js';
 
-import '../styles/pdfEditor.css'
+import '../styles/pdfEditorUser.css'
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -70,7 +70,7 @@ const PDFEditorUser = () => {
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
     await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
     await downloadPDF(status, newFileName); 
-    console.log(newFileName)
+    // console.log(newFileName)
 
     navigate('/formList'); 
   };
@@ -115,16 +115,66 @@ const PDFEditorUser = () => {
       
     }
 
-  const updatedPdfBytes = await editedPdf.save();
-    
-  const base64Pdf = btoa(
-    new Uint8Array(updatedPdfBytes)
-      .reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
-  await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
-  
+    const updatedPdfBytes = await editedPdf.save();
+      
+    const base64Pdf = btoa(
+      new Uint8Array(updatedPdfBytes)
+        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
 
-};
+    await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
+  };
+
+const handleDownloadClick = async () => {
+    if (!pdfDoc) return;
+    
+    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+
+    const originalPdfBytes = await pdfDoc.getData();
+    const editedPdf = await PDFDocument.load(originalPdfBytes);
+
+    const pages = editedPdf.getPages();
+
+    for (let i = 0; i < pages.length; i++) {
+      const pageNumber = i + 1;
+      const page = pages[i];
+
+      const paths = drawings[pageNumber];
+      if (!paths) continue;
+
+      const scaleFactor = 1 / pageScale;
+
+      paths.forEach(path => {
+        for (let j = 0; j < path.length - 1; j++) {
+          const start = path[j];
+          const end = path[j + 1];
+
+          page.drawLine({
+            start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
+            end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
+            thickness: 2,
+            color: rgb(0, 0, 0),
+            lineCap: 'Round',
+          });
+        }
+      });
+    }
+
+    const updatedPdfBytes = await editedPdf.save();
+
+    const blob = new Blob([updatedPdfBytes], { type: 'application/pdf' });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = newFileName;
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
 
 
@@ -143,8 +193,8 @@ const PDFEditorUser = () => {
 
       <div>
         <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>ส่ง</button>
+        <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>ดาวน์โหลด PDF</button>
         <button className='decline-btn btn' onClick={handleDeclineClick}>ยกเลิก</button>
-        {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
       </div>
     </div>
   );

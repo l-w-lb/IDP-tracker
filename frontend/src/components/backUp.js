@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
-import { updatePdfStatus, saveEditedPdf } from '../services/approvalListServices.js';
+import { updatePdfStatus, saveEditedPdf, updatePdfComment } from '../services/approvalListServices.js';
 import { useUser } from '../context/userContext.js';
 
 import '../styles/pdfEditor.css'
@@ -22,6 +22,7 @@ const PDFEditor = () => {
   const [numPages, setNumPages] = useState(0);
   const [drawings, setDrawings] = useState({}); // {pageNumber: [paths]}
   const [pageScale, setPageScale] = useState(1.5);
+  const [comment, setComment] = useState('');
 
   
   const pdfPath = `http://localhost:3300/uploads/${folder}/${pdfName}`;
@@ -57,66 +58,125 @@ const PDFEditor = () => {
     });
   };
 
-  const handleApproveClick = () => {
-    downloadPDF()
-    // navigate('/approvalList');
-    // window.location.reload();
+  const handleApproveClick = async () => {
+    let status = 'รอการอนุมัติจากผอ.กอง';
+    if (user.lead === 'ผอ.กอง') {
+      status = 'รอการอนุมัติจากฝ่ายบุคคล';
+    }
+    if (user.role === 'hr') {
+      status = 'อนุมัติ';
+    }
+
+    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+    await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
+    await downloadPDF(status, newFileName); 
+    await updatePdfComment(comment, pdfId, user.id);
+
+    navigate('/approvalList'); 
   };
 
-  const handleDeclineClick = () => {
+
+  const handleDeclineClick = async () => {
     updatePdfStatus('ไม่อนุมัติ', `/uploads/${folder}/${pdfName}`, pdfId);
+    await updatePdfComment(comment, pdfId, user.id);
     navigate('/approvalList');
     // window.location.reload();
   };
 
-  const downloadPDF = async () => {
+  const downloadPDF = async (status, newFileName) => {
     if (!pdfDoc) return;
 
     const originalPdfBytes = await pdfDoc.getData();
     const editedPdf = await PDFDocument.load(originalPdfBytes);
 
-    const updatedPdfBytes = await editedPdf.save();
+    const pages = editedPdf.getPages();
 
-    const base64Pdf = btoa(
-      new Uint8Array(updatedPdfBytes)
-        .reduce((data, byte) => data + String.fromCharCode(byte), '')
-    );
-    console.log(pdfTitle)
-    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+    for (let i = 0; i < pages.length; i++) {
+      const pageNumber = i + 1;
+      const page = pages[i];
 
-    let status = 'รอการอนุมัติจากผอ.กอง'
-    if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล'
+      const paths = drawings[pageNumber];
+      if (!paths) continue;
+
+      const scaleFactor = 1 / pageScale;
+
+      paths.forEach(path => {
+        for (let j = 0; j < path.length - 1; j++) {
+          const start = path[j];
+          const end = path[j + 1];
+
+          page.drawLine({
+            start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
+            end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
+            thickness: 2,
+            color: rgb(0, 0, 0),
+            lineCap: 'Round',
+          });
+        }
+      });
+      
     }
-    if (user.role === 'hr') {
-      status = 'อนุมัติ'
-    }
-    const savePdf = await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
-    updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId);
-    navigate('/approvalList');
-  };
+
+  const updatedPdfBytes = await editedPdf.save();
+    
+  const base64Pdf = btoa(
+    new Uint8Array(updatedPdfBytes)
+      .reduce((data, byte) => data + String.fromCharCode(byte), '')
+  );
+  
+  await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
+  
+
+};
 
 
 
   return (
-    <div className="pdf-editor-container">
-      {pdfDoc && Array.from({ length: numPages }, (_, i) => (
-        <PDFPage
-          key={i + 1}
-          pdf={pdfDoc}
-          pageNumber={i + 1}
-          drawings={drawings[i + 1] || []}
-          onAddDrawing={(path) => addDrawing(i + 1, path)}
-          scale={pageScale}
-        />
-      ))}
+    // <div className="pdf-editor-container">
+    //   {pdfDoc && Array.from({ length: numPages }, (_, i) => (
+    //     <PDFPage
+    //       key={i + 1}
+    //       pdf={pdfDoc}
+    //       pageNumber={i + 1}
+    //       drawings={drawings[i + 1] || []}
+    //       onAddDrawing={(path) => addDrawing(i + 1, path)}
+    //       scale={pageScale}
+    //     />
+    //   ))}
 
-      <div>
-        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
+    //   <div>
+    //     <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
+    //     <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
+    //     {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
+    //   </div>
+    // </div>
+    <div className="pdf-editor-wrapper">
+      <div className="pdf-viewer">
+        {pdfDoc && Array.from({ length: numPages }, (_, i) => (
+          <PDFPage
+            key={i + 1}
+            pdf={pdfDoc}
+            pageNumber={i + 1}
+            drawings={drawings[i + 1] || []}
+            onAddDrawing={(path) => addDrawing(i + 1, path)}
+            scale={pageScale}
+          />
+        ))}
+      </div>
+
+      <div className="sidebar">
+        <textarea
+          placeholder="กรอกความคิดเห็น..."
+          className="comment-box"
+          rows={5}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <button className='approve-btn btn' onClick={handleApproveClick}>อนุมัติ</button>
         <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
-        {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
       </div>
     </div>
+
   );
 };
 
@@ -160,7 +220,7 @@ const PDFPage = ({ pdf, pageNumber, drawings, onAddDrawing, scale }) => {
       // วาดเส้นที่มีอยู่ (drawings)
       ctx.lineWidth = 2;
       ctx.strokeStyle = 'red';
-      ctx.lineCap = 'round';
+      ctx.lineCap = 'Round';
 
       drawings.forEach(path => {
         ctx.beginPath();
@@ -202,7 +262,7 @@ const PDFPage = ({ pdf, pageNumber, drawings, onAddDrawing, scale }) => {
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = 'red';
-    ctx.lineCap = 'round';
+    ctx.lineCap = 'Round';
 
     ctx.lineTo(x, y);
     ctx.stroke();

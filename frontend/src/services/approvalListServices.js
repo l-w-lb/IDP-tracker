@@ -33,3 +33,11 @@ export const saveEditedPdf = async (base64Pdf, fileName, status, pdfID) => {
             pdfID: pdfID
         });            
     };
+
+export const updatePdfComment = async (comment, pdfID, accountID) => {
+        const res = await axios.post(`${approvalListRoutes}/update-pdf-comment`, {
+            comment, 
+            pdfID, 
+            accountID
+        });            
+    };
