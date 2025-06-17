@@ -75,7 +75,7 @@ function ApprovalList() {
                   <td title={list.path}>
                     <Link
                       to={{
-                        pathname: `/pdfEditorUser${list.path}`,
+                        pathname: `/pdfEditor${list.path}`,
                       }}
                       state={{ pdfId: list.pdfId, pdfTitle: list.title }}
                       // target="_blank"

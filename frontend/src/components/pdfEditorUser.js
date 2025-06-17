@@ -23,6 +23,9 @@ const PDFEditorUser = () => {
   const [numPages, setNumPages] = useState(0);
   const [drawings, setDrawings] = useState({}); // {pageNumber: [paths]}
   const [pageScale, setPageScale] = useState(1.5);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
 
   
   const pdfPath = `http://localhost:3300/uploads/${folder}/${pdfName}`;
@@ -54,9 +57,48 @@ const PDFEditorUser = () => {
       const newDrawings = { ...prev };
       if (!newDrawings[pageNumber]) newDrawings[pageNumber] = [];
       newDrawings[pageNumber].push(path);
+
+      // เก็บใน undoStack
+      setUndoStack(stack => [...stack, { pageNumber, path }]);
+      setRedoStack([]); // clear redo เมื่อมีการวาดใหม่
+
       return newDrawings;
     });
   };
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+
+    const last = undoStack[undoStack.length - 1];
+
+    setDrawings(prev => {
+      const updated = { ...prev };
+      updated[last.pageNumber] = [...updated[last.pageNumber]];
+      updated[last.pageNumber].pop(); // ลบเส้นล่าสุด
+      return updated;
+    });
+
+    setUndoStack(stack => stack.slice(0, -1));
+    setRedoStack(stack => [...stack, last]);
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+
+    const last = redoStack[redoStack.length - 1];
+
+    setDrawings(prev => {
+      const updated = { ...prev };
+      if (!updated[last.pageNumber]) updated[last.pageNumber] = [];
+      updated[last.pageNumber] = [...updated[last.pageNumber], last.path];
+      return updated;
+    });
+
+    setRedoStack(stack => stack.slice(0, -1));
+    setUndoStack(stack => [...stack, last]);
+  };
+
+
 
   const handleApproveClick = async () => {
     let status = 'รอการอนุมัติจากผอ.กลุ่ม'
@@ -127,7 +169,7 @@ const PDFEditorUser = () => {
 
 const handleDownloadClick = async () => {
     if (!pdfDoc) return;
-    
+
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
 
     const originalPdfBytes = await pdfDoc.getData();
@@ -192,6 +234,13 @@ const handleDownloadClick = async () => {
       ))}
 
       <div>
+        <div className="floating-buttons">
+          <i className="bi bi-arrow-counterclockwise btn floating-btn" onClick={handleUndo}></i>
+          <i className="bi bi-arrow-clockwise btn floating-btn" onClick={handleRedo}></i>
+          {/* <button onClick={handleUndo} className="btn floating-btn">⟲</button> */}
+          {/* <button onClick={handleRedo} className="btn floating-btn">⟳</button> */}
+        </div>
+
         <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>ส่ง</button>
         <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>ดาวน์โหลด PDF</button>
         <button className='decline-btn btn' onClick={handleDeclineClick}>ยกเลิก</button>

@@ -11,7 +11,7 @@ import '../styles/pdfEditorUser.css'
 
 GlobalWorkerOptions.workerSrc = workerSrc;
 
-const PDFEditor = () => {
+const PDFEditorUser = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { folder, pdfName } = useParams();
@@ -23,6 +23,9 @@ const PDFEditor = () => {
   const [numPages, setNumPages] = useState(0);
   const [drawings, setDrawings] = useState({}); // {pageNumber: [paths]}
   const [pageScale, setPageScale] = useState(1.5);
+  const [undoStack, setUndoStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
 
   
   const pdfPath = `http://localhost:3300/uploads/${folder}/${pdfName}`;
@@ -54,9 +57,48 @@ const PDFEditor = () => {
       const newDrawings = { ...prev };
       if (!newDrawings[pageNumber]) newDrawings[pageNumber] = [];
       newDrawings[pageNumber].push(path);
+
+      // เก็บใน undoStack
+      setUndoStack(stack => [...stack, { pageNumber, path }]);
+      setRedoStack([]); // clear redo เมื่อมีการวาดใหม่
+
       return newDrawings;
     });
   };
+
+  const handleUndo = () => {
+    if (undoStack.length === 0) return;
+
+    const last = undoStack[undoStack.length - 1];
+
+    setDrawings(prev => {
+      const updated = { ...prev };
+      updated[last.pageNumber] = [...updated[last.pageNumber]];
+      updated[last.pageNumber].pop(); // ลบเส้นล่าสุด
+      return updated;
+    });
+
+    setUndoStack(stack => stack.slice(0, -1));
+    setRedoStack(stack => [...stack, last]);
+  };
+
+  const handleRedo = () => {
+    if (redoStack.length === 0) return;
+
+    const last = redoStack[redoStack.length - 1];
+
+    setDrawings(prev => {
+      const updated = { ...prev };
+      if (!updated[last.pageNumber]) updated[last.pageNumber] = [];
+      updated[last.pageNumber] = [...updated[last.pageNumber], last.path];
+      return updated;
+    });
+
+    setRedoStack(stack => stack.slice(0, -1));
+    setUndoStack(stack => [...stack, last]);
+  };
+
+
 
   const handleApproveClick = async () => {
     let status = 'รอการอนุมัติจากผอ.กลุ่ม'
@@ -70,7 +112,7 @@ const PDFEditor = () => {
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
     await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
     await downloadPDF(status, newFileName); 
-    console.log(newFileName)
+    // console.log(newFileName)
 
     navigate('/formList'); 
   };
@@ -115,16 +157,66 @@ const PDFEditor = () => {
       
     }
 
-  const updatedPdfBytes = await editedPdf.save();
-    
-  const base64Pdf = btoa(
-    new Uint8Array(updatedPdfBytes)
-      .reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
-  await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
-  
+    const updatedPdfBytes = await editedPdf.save();
+      
+    const base64Pdf = btoa(
+      new Uint8Array(updatedPdfBytes)
+        .reduce((data, byte) => data + String.fromCharCode(byte), '')
+    );
 
-};
+    await saveEditedPdf(base64Pdf, `${newFileName}`, status, pdfId);
+  };
+
+const handleDownloadClick = async () => {
+    if (!pdfDoc) return;
+
+    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+
+    const originalPdfBytes = await pdfDoc.getData();
+    const editedPdf = await PDFDocument.load(originalPdfBytes);
+
+    const pages = editedPdf.getPages();
+
+    for (let i = 0; i < pages.length; i++) {
+      const pageNumber = i + 1;
+      const page = pages[i];
+
+      const paths = drawings[pageNumber];
+      if (!paths) continue;
+
+      const scaleFactor = 1 / pageScale;
+
+      paths.forEach(path => {
+        for (let j = 0; j < path.length - 1; j++) {
+          const start = path[j];
+          const end = path[j + 1];
+
+          page.drawLine({
+            start: { x: start.x * scaleFactor, y: page.getHeight() - start.y * scaleFactor },
+            end: { x: end.x * scaleFactor, y: page.getHeight() - end.y * scaleFactor },
+            thickness: 2,
+            color: rgb(0, 0, 0),
+            lineCap: 'Round',
+          });
+        }
+      });
+    }
+
+    const updatedPdfBytes = await editedPdf.save();
+
+    const blob = new Blob([updatedPdfBytes], { type: 'application/pdf' });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = newFileName;
+    document.body.appendChild(a);
+    a.click();
+
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
 
 
 
@@ -142,9 +234,15 @@ const PDFEditor = () => {
       ))}
 
       <div>
-        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>ส่ง</button>
-        <button className='decline-btn btn' onClick={handleDeclineClick}>ยกเลิก</button>
-        {/* <button onClick={downloadPDF}>ดาวน์โหลด PDF</button> */}
+        <div className="floating-buttons">
+          <button onClick={handleUndo} className="btn floating-btn">⟲</button>
+          <button onClick={handleRedo} className="btn floating-btn">⟳</button>
+        </div>
+
+
+        <button className='approve-btn btn' style={{ marginRight: '20px' }} onClick={handleApproveClick}>อนุมัติ</button>
+        <button className='download-btn btn' style={{ marginRight: '20px' }} onClick={handleDownloadClick}>ดาวน์โหลด PDF</button>
+        <button className='decline-btn btn' onClick={handleDeclineClick}>ไม่อนุมัติ</button>
       </div>
     </div>
   );
@@ -262,4 +360,4 @@ const PDFPage = ({ pdf, pageNumber, drawings, onAddDrawing, scale }) => {
 
 };
 
-export default PDFEditor;
+export default PDFEditorUser;
