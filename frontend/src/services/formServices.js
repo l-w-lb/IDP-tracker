@@ -108,11 +108,18 @@ export const fetchformData = async (id, userID, partID) => {
             appendTopicToPart(inheritedTopic.children, item, item.topicType === 'multipleFile' ? null : 0);
 
             if (inheritedTopic.type === 'dynamicQuestion') {
-              inheritedTopic.topicDetail.add = Math.max(
-                inheritedTopic.topicDetail.add || 0,
-                (item.groupInstance ?? 0) + 1,
-                inheritedTopic.topicDetail.min
-              ) || 1;
+              // if (item.answer !== '' && item.answer !== undefined && item.answer !== null) {
+                let groupInstance = 0
+                if (item.groupInstance && item.answer) {
+                  groupInstance = item.groupInstance
+                }
+
+                inheritedTopic.topicDetail.add = Math.max(
+                  inheritedTopic.topicDetail.add || 0,
+                  groupInstance + 1,
+                  inheritedTopic.topicDetail.min
+                ) || 1;
+              // }
             }
             
           } else {
