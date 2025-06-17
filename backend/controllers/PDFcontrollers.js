@@ -48,7 +48,7 @@ const genPDF = (req, res) => {
   doc
       .font('Sarabun-Bold')
       .fontSize(16)
-      .text(`${foundItem.description}`, { align: 'center' })
+      .text(`${foundItem.description ? foundItem.description : ''}`, { align: 'center' })
 
   data.map((data, dataIndex) => {
 
@@ -60,7 +60,6 @@ const genPDF = (req, res) => {
         .fontSize(14)
         .text(`${topic.topic}`);
 
-      // question
       topic.questions.map((question, questionIndex) => {
         doc
           .moveDown(0.3)
@@ -79,10 +78,10 @@ const genPDF = (req, res) => {
               .font('Sarabun-Thin')
               .fontSize(11)
               .text(`${ans.answer}`);
-              // .text(ans.answer === '-' ? '-' : `- ${ans.answer}`);
           })
       })
 
+      // children
       topic.children.map((child, childIndex) => {
         console.log(child)
         doc
@@ -120,9 +119,11 @@ const genPDF = (req, res) => {
     .moveDown(4)
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('ผู้จัดทำแผน: ............................', { align: 'right' })
-    .text('           (.............................)', { align: 'right' })
-    .text('วันที่ .............................', { align: 'right' });
+    .text('ผู้จัดทำแผน: ........................................................', { align: 'right' })
+    .moveDown(0.3)
+    .text('           (.........................................................)', { align: 'right' })
+    .moveDown(0.3)
+    .text('วันที่ .........................................................', { align: 'right' });
 
   doc
     .moveDown(2)
@@ -134,16 +135,19 @@ const genPDF = (req, res) => {
     .moveDown()
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('..................................................................', { align: 'right' })
+    .text('....................................................................................................................................', { align: 'right' })
   
   doc
     .moveDown(1)
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('ลงนาม: ..............................', { align: 'right' })
-    .text('..............................', { align: 'right' })
-    .text('ตำแหน่ง: ..............................', { align: 'right' })
-    .text('วันที่: ..............................', { align: 'right' })
+    .text('ลงนาม: ............................................................', { align: 'right' })
+    .moveDown(0.3)
+    .text('(............................................................)', { align: 'right' })
+    .moveDown(0.3)
+    .text('ตำแหน่ง: ............................................................', { align: 'right' })
+    .moveDown(0.3)
+    .text('วันที่: ............................................................', { align: 'right' })
   
   doc
     .moveDown(2)
@@ -155,16 +159,19 @@ const genPDF = (req, res) => {
     .moveDown()
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('..................................................................', { align: 'right' })
+    .text('....................................................................................................................................', { align: 'right' })
 
   doc
     .moveDown(1)
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('ลงนาม: ..............................', { align: 'right' })
-    .text('..............................', { align: 'right' })
-    .text('ตำแหน่ง: ..............................', { align: 'right' })
-    .text('วันที่: ..............................', { align: 'right' })
+    .text('ลงนาม: ............................................................', { align: 'right' })
+    .moveDown(0.3)
+    .text('(............................................................)', { align: 'right' })
+    .moveDown(0.3)
+    .text('ตำแหน่ง: ............................................................', { align: 'right' })
+    .moveDown(0.3)
+    .text('วันที่: ............................................................', { align: 'right' })
 
   doc
     .moveDown(2)
@@ -183,9 +190,11 @@ const genPDF = (req, res) => {
     .moveDown(1)
     .font('Sarabun-Regular')
     .fontSize(12)
-    .text('ลงชื่อ: ..............................(เจ้าหน้าที่ กก.กพท./ผู้ตรวจสอบ)', { align: 'right' })
-    .text('(..............................)', { align: 'right' })
-    .text('วันที่: ..............................', { align: 'right' })
+    .text('ลงชื่อ: ............................................................(เจ้าหน้าที่ กก.กพท./ผู้ตรวจสอบ)', { align: 'right' })
+    .moveDown(0.3)
+    .text('(............................................................)', { align: 'right' })
+    .moveDown(0.3)
+    .text('วันที่: ............................................................', { align: 'right' })
 
 
   doc.font('Sarabun-Thin').text(``);

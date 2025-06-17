@@ -305,10 +305,17 @@ function Form() {
               for (const question of child.questions) {
                 if (question.required) {
                   let hasAnyAnswer = true;
-                  if (topic.questions[0].answer[0].anwer === child.id) {
-                    console.log('ok')
-                  }
-                  if (child.type === 'multipleAnswer' || child.type === 'dynamicQuestion') {
+                  if (child.type === 'multipleFile') {
+                    // const min = topic.topicDetail?.min;
+                    // for (let i = 0; i < min; i++) {
+                    //   const found = question.answer.find(
+                    //     a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                    //   );
+                    //   if (!found) {
+                    //     hasAnyAnswer = false;
+                    //   }
+                    // }
+                  } else if (child.type === 'multipleAnswer' || child.type === 'dynamicQuestion') {
                     const min = topic.topicDetail?.min;
                     for (let i = 0; i < min; i++) {
                       const found = question.answer.find(
@@ -316,6 +323,32 @@ function Form() {
                       );
                       if (!found) {
                         hasAnyAnswer = false;
+                      }
+                    }
+                  } else if (topic.type === 'dynamicQuestion') {
+                    if (String(topic.questions[0].answer[0].answer) === String(child.id)) {
+                      const min = topic.topicDetail?.min;
+                      console.log('in')
+                      for (let i = 0; i < min; i++) {
+                        const found = question.answer.find(
+                          a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                        );
+                        if (!found) {
+                          hasAnyAnswer = false;
+                          console.log(question)
+                        }
+                      }
+                    }
+                  } else if (topic.type === 'multipleAnswer') {
+                    const min = topic.topicDetail?.min;
+                    console.log('inj')
+                    for (let i = 0; i < min; i++) {
+                      const found = question.answer.find(
+                        a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
+                      );
+                      if (!found) {
+                        hasAnyAnswer = false;
+                        console.log(question)
                       }
                     }
                   } else {
