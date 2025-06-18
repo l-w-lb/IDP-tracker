@@ -106,7 +106,7 @@ const PDFEditorUser = () => {
       status = 'รอการอนุมัติจากผอ.กอง'
     }
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล'
+      status = 'รอการอนุมัติจากผู้ตรวจสอบ'
     }
 
     const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
@@ -234,7 +234,7 @@ const PDFEditorUser = () => {
       status = 'รอการอนุมัติจากผอ.กอง'
     }
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล'
+      status = 'รอการอนุมัติจากผู้ตรวจสอบ'
     }
 
     try {

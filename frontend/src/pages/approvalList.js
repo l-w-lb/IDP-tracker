@@ -33,7 +33,7 @@ function ApprovalList() {
               //   lead.push('ผอ.กอง')
               //   value = user.division
               //   leaderOF = 'division'
-                status = 'รอการอนุมัติจากฝ่ายบุคคล';
+                status = 'รอการอนุมัติจากผู้ตรวจสอบ';
                 hr = true
               }
 

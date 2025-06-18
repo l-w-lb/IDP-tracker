@@ -103,7 +103,7 @@ const PDFEditorUser = () => {
   const handleApproveClick = async () => {
     let status = 'รอการอนุมัติจากผอ.กอง';
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากฝ่ายบุคคล';
+      status = 'รอการอนุมัติจากผู้ตรวจสอบ';
     }
     if (user.role === 'hr') {
       status = 'อนุมัติ';

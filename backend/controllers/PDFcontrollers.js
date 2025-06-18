@@ -5,9 +5,197 @@ const path = require('path');
 const db = require('../db');
 const { PDFDocument  } = require('pdf-lib');
 
+const totalTime = (time) => {
+    const totalInSeconds = time.reduce((acc, time) => acc + timeToSeconds(time.answer), 0);
+    const totalTimeValue = secondsToTime(totalInSeconds);
+    return totalTimeValue
+  }
+
+  function timeToSeconds(timeStr) {
+    const [h = 0, m = 0, s = 0] = timeStr.split(':').map(Number);
+    return h * 3600 + m * 60 + s;
+  }
+
+  function secondsToTime(totalSeconds) {
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+function renderTopic(doc, parent, topic, margin) {
+  doc
+    .moveDown() 
+    .font('Sarabun-Bold')
+    .fontSize(14)
+    .text(`${topic.topic}`)
+
+  if (parent 
+      // ? (parent.type === 'multipleAnswer' && topic.type === "singleAnswer") 
+      ? (parent.type === 'multipleAnswer' || parent.type === 'dynamicQuestion') 
+      : topic.type === 'multipleAnswer') {
+    const pageWidth = doc.page.width;
+    const usableWidth = pageWidth - margin * 2;
+    const colWidth = usableWidth / topic.questions.length;
+
+    let startX = margin;
+    let startY = doc.y + 15;
+
+    const questionRowHeight = 25;  
+    const answerRowHeight = 70;    
+    const spaceAfterHeader = 65; 
+
+
+    const filteredQuestions = topic.questions.filter(q => q.question !== '');
+    const newColWidth = usableWidth / filteredQuestions.length;
+
+    filteredQuestions.forEach((question, i) => {
+      doc
+        .font('Sarabun-Regular')
+        .fontSize(12)
+        .text(question.question, startX + i * newColWidth, startY, {
+          width: newColWidth,
+          align: 'center'
+        })
+        .moveDown(0.3);
+    });
+
+
+    startY += questionRowHeight + spaceAfterHeader;
+    const maxAnswers = Math.max(
+      ...topic.questions.map(q => q.answer?.length || 0)
+    );
+
+    const contentBottomY = startY + (maxAnswers * answerRowHeight);
+    const pageHeight = doc.page.height;
+
+    if (contentBottomY > pageHeight - margin) {
+      doc.addPage();
+      startY = margin; // reset Y ตำแหน่งบนของหน้าใหม่
+    }
+
+    let sum = null;
+
+    for (let row = 0; row < maxAnswers; row++) {
+      filteredQuestions.forEach((question, colIndex) => {
+        const ans = question.answer?.[row]?.answer.replace('/uploads/answers/', '').trim() ?? '-';
+        if (question.question !== '') {
+          doc
+            .font('Sarabun-Thin')
+            .fontSize(11)
+            .text(ans, startX + colIndex * newColWidth, startY + row * 70, {
+              width: newColWidth,
+              align: 'center'
+            });
+          
+          if (question.questionDetail?.sum === 0) {
+            sum = 0;
+            question.answer.map((ans, ansIndex) => {
+              sum = sum += ans
+            })
+          }
+        }
+      });
+    }
+
+    doc.y = startY + maxAnswers * answerRowHeight;
+    doc.x = margin;
+
+    if (sum === 0) {
+      doc
+        .font('Sarabun-Bold')
+        .fontSize(11)
+        .text(`Total: ${sum}`)
+    }
+
+    doc.moveDown(1);
+
+  } else if (topic.type === 'multipleFile') {
+    const questionHeights = [];
+    topic.questions.forEach((question, i) => {
+      const text = question.question || '-';
+      const { height } = doc.heightOfString(text, {
+        width: colWidth,
+        align: 'center',
+        font: 'Sarabun-Regular',
+        fontSize: 12
+      });
+
+      questionHeights.push(height);
+
+      // if (question.questionDetail?.sum === 0) {
+      //   console.log(question.question)
+      // }
+
+      doc
+        .font('Sarabun-Regular')
+        .fontSize(12)
+        .text(text, startX + i * colWidth, startY, {
+          width: colWidth,
+          align: 'center'
+        });
+
+          if (question.type !== 'none') {
+            if (question.answer.length === 0) {
+              doc
+                .font('Sarabun-Thin')
+                .fontSize(11)
+                .text('-');
+            } else {
+              question.answer.forEach((ans) => {
+                const cleanAnswer = ans.answer
+                  ? ans.answer.replace('/uploads/generatedpdf', '').trim()
+                  : '-';
+
+                doc
+                  .font('Sarabun-Thin')
+                  .fontSize(11)
+                  .text(cleanAnswer);
+              });
+            }
+          }
+      });
+      doc.moveDown(1);
+  } else {
+    if (topic.type === 'dynamicQuestion') {
+      
+    } else {
+      topic.questions.forEach((question) => {
+        doc
+          .moveDown(0.5)
+          .font('Sarabun-Regular')
+          .fontSize(12)
+          .text(`${question.question}`)
+          .moveDown(0.3);
+
+          if (question.type !== 'none') {
+            if (question.answer.length === 0) {
+              doc
+                .font('Sarabun-Thin')
+                .fontSize(11)
+                .text('-');
+            } else {
+              question.answer.forEach((ans) => {
+                doc
+                  .font('Sarabun-Thin')
+                  .fontSize(11)
+                  .text(`${ans.answer ? ans.answer : '-'}`);
+              }
+            );
+          }}
+      });
+      doc.moveDown(1);
+    }
+  }
+
+  
+  doc.x = margin;
+}
+
+
 const genPDF = (req, res) => {
   const {formTitle, status, userID, formID, partID, data} = req.body;
-  console.log(formTitle, status, userID, formID, partID, data)
+  // console.log(formTitle, status, userID, formID, partID, data)
 
   const dir = path.join(__dirname, '..', 'uploads', 'generatedPdf');
 
@@ -38,6 +226,8 @@ const genPDF = (req, res) => {
   const pageWidth = doc.page.width;
   const margin = 60;
 
+  doc.x = margin;
+
   // part
   const foundItem = data.find(item => item.id === partID);
   doc
@@ -53,66 +243,15 @@ const genPDF = (req, res) => {
   data.map((data, dataIndex) => {
 
     // topic
-    data.topics.map((topic, topicIndex) => {
-      doc
-        .moveDown() 
-        .font('Sarabun-Bold')
-        .fontSize(14)
-        .text(`${topic.topic}`);
-
-      topic.questions.map((question, questionIndex) => {
-        doc
-          .moveDown(0.3)
-          .font('Sarabun-Regular')
-          .fontSize(12)
-          .text(`${question.question}`);
-
-        // answer
-        question.answer.length === 0 
-          ? doc
-              .font('Sarabun-Thin')
-              .fontSize(11)
-              .text('-')
-          : question.answer.map((ans, ansIndex) => {
-            doc
-              .font('Sarabun-Thin')
-              .fontSize(11)
-              .text(`${ans.answer}`);
-          })
-      })
+    data.topics.forEach((topic) => {
+      renderTopic(doc, null, topic, margin);
 
       // children
-      topic.children.map((child, childIndex) => {
-        console.log(child)
-        doc
-        .moveDown() 
-        .font('Sarabun-Bold')
-        .fontSize(14)
-        .text(`${child.topic}`);
+      topic.children.forEach((child) => {
+        renderTopic(doc, topic, child, margin);
+      });
+    });
 
-        child.questions.map((question, questionIndex) => {
-          doc
-            .moveDown(0.3)
-            .font('Sarabun-Regular')
-            .fontSize(12)
-            .text(`${question.question}`);
-
-          // answer
-          question.answer.length === 0 
-            ? doc
-                .font('Sarabun-Thin')
-                .fontSize(11)
-                .text('-')
-            : question.answer.map((ans, ansIndex) => {
-              doc
-                .font('Sarabun-Thin')
-                .fontSize(11)
-                .text(`${ans.answer}`);
-                // .text(ans.answer === '-' ? '-' : `- ${ans.answer}`);
-            })
-        })
-      })
-    })
   })
 
   doc
@@ -227,7 +366,6 @@ const genPDF = (req, res) => {
 const uploadPDF = (req, res) => {
   const { fileName, time } = req.body;
   const file = req.file;
-  console.log('foo')
   if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }

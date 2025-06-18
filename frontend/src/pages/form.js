@@ -306,15 +306,7 @@ function Form() {
                 if (question.required) {
                   let hasAnyAnswer = true;
                   if (child.type === 'multipleFile') {
-                    // const min = topic.topicDetail?.min;
-                    // for (let i = 0; i < min; i++) {
-                    //   const found = question.answer.find(
-                    //     a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
-                    //   );
-                    //   if (!found) {
-                    //     hasAnyAnswer = false;
-                    //   }
-                    // }
+                    hasAnyAnswer = Array.isArray(question.answer) && question.answer.some(a => a.answer && a.answer.trim() !== '');
                   } else if (child.type === 'multipleAnswer' || child.type === 'dynamicQuestion') {
                     const min = topic.topicDetail?.min;
                     for (let i = 0; i < min; i++) {
@@ -328,7 +320,6 @@ function Form() {
                   } else if (topic.type === 'dynamicQuestion') {
                     if (String(topic.questions[0].answer[0].answer) === String(child.id)) {
                       const min = topic.topicDetail?.min;
-                      console.log('in')
                       for (let i = 0; i < min; i++) {
                         const found = question.answer.find(
                           a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
@@ -341,7 +332,6 @@ function Form() {
                     }
                   } else if (topic.type === 'multipleAnswer') {
                     const min = topic.topicDetail?.min;
-                    console.log('inj')
                     for (let i = 0; i < min; i++) {
                       const found = question.answer.find(
                         a => a.groupInstance === i && a.answer && a.answer.trim() !== ''
