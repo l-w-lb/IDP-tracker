@@ -4,7 +4,7 @@ import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
-import { updatePdfStatus, saveEditedPdf, uploadPDF } from '../services/approvalListServices.js';
+import { updatePdfStatus, saveEditedPdf, uploadPDF, updatePdfDate } from '../services/formServices.js';
 import { useUser } from '../context/userContext.js';
 
 import '../styles/pdfEditorUser.css'
@@ -106,11 +106,14 @@ const PDFEditorUser = () => {
       status = 'รอการอนุมัติจากผอ.กอง'
     }
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากผู้ตรวจสอบ'
+      status = 'รอการอนุมัติจากฝ่ายบุคคล'
     }
 
-    const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+    const time = Date.now()
+    const readableDate = new Date(time).toLocaleString();
+    const newFileName =  `${pdfTitle}_${time}.pdf`;
     await updatePdfStatus(status, `/uploads/${folder}/${newFileName}`, pdfId); 
+    await updatePdfDate(pdfId, readableDate)
     await downloadPDF(status, newFileName); 
     // console.log(newFileName)
 
@@ -170,7 +173,8 @@ const PDFEditorUser = () => {
   const handleDownloadClick = async () => {
       if (!pdfDoc) return;
 
-      const newFileName =  `${pdfTitle}_${Date.now()}.pdf`;
+      const time = Date.now()
+      const newFileName =  `${pdfTitle}_${time}.pdf`;
 
       const originalPdfBytes = await pdfDoc.getData();
       const editedPdf = await PDFDocument.load(originalPdfBytes);
@@ -227,6 +231,7 @@ const PDFEditorUser = () => {
     if (!file) return;
 
     const time = Date.now()
+    const readableDate = new Date(time).toLocaleString();
     const fileUrl = `/uploads/generatedpdf/${pdfTitle}_${time}`;
 
     let status = 'รอการอนุมัติจากผอ.กลุ่ม'
@@ -234,12 +239,13 @@ const PDFEditorUser = () => {
       status = 'รอการอนุมัติจากผอ.กอง'
     }
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากผู้ตรวจสอบ'
+      status = 'รอการอนุมัติจากฝ่ายบุคคล'
     }
 
     try {
       await uploadPDF(fileUrl, file, time);
       await updatePdfStatus(status, fileUrl, pdfId)
+      await updatePdfDate(pdfId, readableDate)
       navigate('/formList'); 
     } catch (err) {
       console.error('fail to generate PDF:', err.message);

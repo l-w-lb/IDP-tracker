@@ -35,5 +35,8 @@ router.post('/insert-new-datalist',formController.insertNewDatalist);
 router.post('/generate-pdf',PDFcontrollers.genPDF);
 router.post('/upload-pdf', upload.single('pdf'), PDFcontrollers.uploadPDF);
 router.post('/delete-pdf-path',PDFcontrollers.deletePdfPath);
+router.post('/update-pdf-date',PDFcontrollers.updatePdfDate);
+router.post('/update-pdf-status', PDFcontrollers.updatePdfStatus);
+router.post('/save-edited-pdf', PDFcontrollers.saveEditedPdf);
 
 module.exports = router;

@@ -19,16 +19,16 @@ const getApprovalList = (req, res) => {
   const placeholders = lead.map(() => '?').join(', ');
 
   const sql = hr ? `
-    SELECT generatedpdf.path, form.id, form.title,
+    SELECT generatedpdf.path, form.id, form.title, generatedpdf.date,
            part.text AS part, account.fullname, generatedpdf.id AS pdfId, form.title
     FROM generatedpdf
     JOIN form ON form.id = generatedpdf.formID
-    JOIN part ON form.id = part.formID
+    JOIN part ON part.id = generatedpdf.partID
     JOIN account ON account.id = generatedpdf.userID
     WHERE generatedpdf.status = ?
     ORDER BY generatedpdf.id ASC;
   ` : `
-    SELECT generatedpdf.path, form.id, form.title,
+    SELECT generatedpdf.path, form.id, form.title, generatedpdf.date,
            part.text AS part, account.fullname, generatedpdf.id AS pdfId, form.title
     FROM generatedpdf
     JOIN form ON form.id = generatedpdf.formID
@@ -41,7 +41,7 @@ const getApprovalList = (req, res) => {
   `;
 
   const params = hr ? [status] : [value, ...lead, status];
-  // console.log(params)
+  console.log(params, sql)
 
   db.query(sql, params, (err, result) => {
     if (err) {

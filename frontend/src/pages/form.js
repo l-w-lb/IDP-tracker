@@ -676,6 +676,7 @@ function Form() {
           <input 
             className='input-field' 
             list="datalist" 
+            placeholder='คำตอบของคุณ'
             name="data" 
             value={answer}
             id="dataInput" 
@@ -1017,7 +1018,7 @@ function Form() {
           <span className="show-sum">Total: {question.questionDetail.sum}</span>
         )}
         {(
-          (topicDetail.currentIndex < topicDetail.min) && Boolean(question.required)) && (
+          (topicDetail.min ? topicDetail.currentIndex < topicDetail.min : true) && Boolean(question.required)) && (
           <span style={{ color: 'red' }}> *</span>
         )}
       </>

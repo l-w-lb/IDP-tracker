@@ -33,7 +33,7 @@ function ApprovalList() {
               //   lead.push('ผอ.กอง')
               //   value = user.division
               //   leaderOF = 'division'
-                status = 'รอการอนุมัติจากผู้ตรวจสอบ';
+                status = 'รอการอนุมัติจากฝ่ายบุคคล';
                 hr = true
               }
 
@@ -59,33 +59,36 @@ function ApprovalList() {
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">ชื่อ-นามสกุล</th>
+                <th scope="col">วันที่ส่ง</th>
                 <th scope="col" className="ellipsis">แบบสอบถาม</th>
                 {/* <th scope="col">สถานะ</th> */}
                 <th scope="col">pdf</th>
               </tr>
             </thead>
             <tbody>
-              {approvalList.map((list, index) => (
-                <tr key={index}>
+              {approvalList.map((list, index) => {
+                return ( <tr key={index}>
                   <th scope="row">{index + 1}</th>
-                  <td>{list.fullname}</td>
-                  <td className="title-ellipsis" title={list.part ? `${list.title}/${list.part}` : list.title}>
-                    {list.part ? `${list.title}/${list.part}` : list.title}
-                  </td>
-                  <td title={list.path}>
-                    <Link
-                      to={{
-                        pathname: `/pdfEditor${list.path}`,
-                      }}
-                      state={{ pdfId: list.pdfId, pdfTitle: list.title }}
-                      // target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <i className="bi bi-box-arrow-right"></i>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    <td>{list.fullname}</td>
+                    <td>{list.date ? list.date : '-'}</td>
+                    <td className="title-ellipsis" title={list.part ? `${list.title}/${list.part}` : list.title}>
+                      {list.part ? `${list.title}/${list.part}` : list.title}
+                    </td>
+                    <td title={list.path}>
+                      <Link
+                        to={{
+                          pathname: `/pdfEditor${list.path}`,
+                        }}
+                        state={{ pdfId: list.pdfId, pdfTitle: list.title, pdfDate: list.date }}
+                        // target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i className="bi bi-box-arrow-right"></i>
+                      </Link>
+                    </td>
+                  </tr>)
+                }
+              )}
             </tbody>
           </table>
 

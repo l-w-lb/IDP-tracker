@@ -15,13 +15,13 @@ const PDFEditorUser = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { folder, pdfName } = useParams();
-  const { pdfId, pdfTitle } = location.state || {};
+  const { pdfId, pdfTitle, pdfDate } = location.state || {};
   const { user } = useUser();
   console.log('123',pdfId, pdfTitle)
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [numPages, setNumPages] = useState(0);
-  const [drawings, setDrawings] = useState({}); // {pageNumber: [paths]}
+  const [drawings, setDrawings] = useState({}); 
   const [pageScale, setPageScale] = useState(1.5);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -103,7 +103,7 @@ const PDFEditorUser = () => {
   const handleApproveClick = async () => {
     let status = 'รอการอนุมัติจากผอ.กอง';
     if (user.lead === 'ผอ.กอง') {
-      status = 'รอการอนุมัติจากผู้ตรวจสอบ';
+      status = 'รอการอนุมัติจากฝ่ายบุคคล';
     }
     if (user.role === 'hr') {
       status = 'อนุมัติ';

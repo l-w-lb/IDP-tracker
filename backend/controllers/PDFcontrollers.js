@@ -203,8 +203,11 @@ const genPDF = (req, res) => {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  const fileName = `${formTitle}_${Date.now()}.pdf`;
+  const date = Date.now()
+  const fileName = `${formTitle}_${date}.pdf`;
   const filePath = path.join(dir, fileName);
+
+  // const readableDate = new Date(date).toLocaleString();
 
   const doc = new PDFkit();
   const writeStream = fs.createWriteStream(filePath);
@@ -409,6 +412,21 @@ const updatePdfStatus = (req, res) => {
   });
 };
 
+const updatePdfDate = (req, res) => {
+  const { date, pdfID } = req.body;
+  console.log(date, pdfID)
+  
+  const sql = `UPDATE generatedpdf
+    SET date = ?
+    WHERE id = ?;
+  `;
+
+  db.query(sql, [date, pdfID], (err, result) => {
+    if (err) throw err;
+    res.json(result);
+  });
+};
+
 const saveEditedPdf = async (req, res) => {
   try {
     const { base64Pdf, fileName, status, pdfID } = req.body;
@@ -480,5 +498,6 @@ module.exports = {
   updatePdfStatus,
   saveEditedPdf,
   updatePdfComment,
-  downloadEditedPdf
+  downloadEditedPdf,
+  updatePdfDate
 };

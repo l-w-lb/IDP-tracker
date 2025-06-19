@@ -190,9 +190,34 @@ export const insertNewDatalist = async (value) => {
         return res.data
     };
 
-  export const deletePdfPath = async (value) => {
-        const res = await axios.post(`${formRoutes}/delete-pdf-path`, {
-            path: value
-        });
-        console.log(res)
+export const deletePdfPath = async (value) => {
+      const res = await axios.post(`${formRoutes}/delete-pdf-path`, {
+          path: value
+      });
+      console.log(res)
+  };
+
+export const updatePdfDate = async (pdfID, date) => {
+    const res = await axios.post(`${formRoutes}/update-pdf-date`, {
+        pdfID,
+        date
+    });
+    console.log(res)
+};
+
+export const updatePdfStatus = async (status, path, pdfID) => {
+        const res = await axios.post(`${formRoutes}/update-pdf-status`, {
+            status: status, 
+            pdfID: pdfID,
+            path: path
+        });            
+    };
+
+export const saveEditedPdf = async (base64Pdf, fileName, status, pdfID) => {
+        const res = await axios.post(`${formRoutes}/save-edited-pdf`, {
+            base64Pdf: base64Pdf, 
+            fileName: fileName,
+            status: status,
+            pdfID: pdfID
+        });            
     };
