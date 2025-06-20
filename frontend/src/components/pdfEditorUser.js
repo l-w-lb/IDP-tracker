@@ -4,7 +4,8 @@ import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from 'pdfjs-dist/legacy/build/pdf.worker.entry';
 
-import { updatePdfStatus, saveEditedPdf, uploadPDF, updatePdfDate } from '../services/formServices.js';
+import { updatePdfStatus, saveEditedPdf, uploadPDF } from '../services/approvalListServices.js';
+import { updatePdfDate } from '../services/formServices.js';
 import { useUser } from '../context/userContext.js';
 
 import '../styles/pdfEditorUser.css'

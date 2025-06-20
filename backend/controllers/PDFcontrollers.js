@@ -49,7 +49,21 @@ function renderTopic(doc, parent, topic, margin) {
     const filteredQuestions = topic.questions.filter(q => q.question !== '');
     const newColWidth = usableWidth / filteredQuestions.length;
 
+    const pageHeight = doc.page.height;
+
     filteredQuestions.forEach((question, i) => {
+      const estimatedHeight = doc.heightOfString(question.question || '-', {
+        width: newColWidth,
+        align: 'center',
+        font: 'Sarabun-Regular',
+        fontSize: 12
+      });
+
+      if (doc.y + estimatedHeight > pageHeight - margin) {
+        doc.addPage();
+        startY = margin; // รีเซตตำแหน่งเริ่มต้น
+      }
+
       doc
         .font('Sarabun-Regular')
         .fontSize(12)
@@ -61,13 +75,13 @@ function renderTopic(doc, parent, topic, margin) {
     });
 
 
+
     startY += questionRowHeight + spaceAfterHeader;
     const maxAnswers = Math.max(
       ...topic.questions.map(q => q.answer?.length || 0)
     );
 
     const contentBottomY = startY + (maxAnswers * answerRowHeight);
-    const pageHeight = doc.page.height;
 
     if (contentBottomY > pageHeight - margin) {
       doc.addPage();
@@ -91,7 +105,7 @@ function renderTopic(doc, parent, topic, margin) {
           if (question.questionDetail?.sum === 0) {
             sum = 0;
             question.answer.map((ans, ansIndex) => {
-              sum = sum += ans
+              sum = sum += ans.answer
             })
           }
         }
@@ -100,8 +114,7 @@ function renderTopic(doc, parent, topic, margin) {
 
     doc.y = startY + maxAnswers * answerRowHeight;
     doc.x = margin;
-
-    if (sum === 0) {
+    if (sum !== null) {
       doc
         .font('Sarabun-Bold')
         .fontSize(11)
@@ -368,6 +381,7 @@ const genPDF = (req, res) => {
 
 const uploadPDF = (req, res) => {
   const { fileName, time } = req.body;
+  console.log('//',fileName, time)
   const file = req.file;
   if (!file) {
     return res.status(400).json({ error: 'No file uploaded' });
